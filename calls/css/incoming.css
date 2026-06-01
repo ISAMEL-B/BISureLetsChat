@@ -1,0 +1,444 @@
+:root {
+    --whatsapp-green: #128C7E;
+    --whatsapp-dark-green: #075E54;
+    --whatsapp-light-green: #25D366;
+    --whatsapp-teal-green: #34B7F1;
+    --danger-red: #e74c3c;
+    --danger-dark: #c0392b;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --text-light: #ffffff;
+    --text-dark: #495057;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --radius: 12px;
+    --pro-badge: #FFD700;
+    --call-bg: #e5ddd5;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: var(--call-bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+.header {
+    background: linear-gradient(135deg, var(--whatsapp-green) 0%, var(--whatsapp-dark-green) 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.pro-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: var(--pro-badge);
+    color: var(--dark);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* Incoming Call Screen */
+.incoming-call-screen {
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.caller-info {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.caller-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    overflow: hidden;
+    border: 4px solid var(--whatsapp-light-green);
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.caller-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.online-status {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--whatsapp-light-green);
+    border: 3px solid white;
+}
+
+.caller-name {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--whatsapp-dark-green);
+}
+
+.call-type {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.call-status {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.call-actions {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+.action-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.action-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+    transition: var(--transition);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.action-text {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.accept-call {
+    background-color: var(--whatsapp-light-green);
+}
+
+.accept-call:hover {
+    background-color: #20c467;
+    transform: scale(1.05);
+}
+
+.decline-call {
+    background-color: var(--danger-red);
+}
+
+.decline-call:hover {
+    background-color: #e43725;
+    transform: scale(1.05);
+}
+
+/* Active Call Screen */
+.active-call-screen {
+    display: none;
+    padding: 20px;
+}
+
+.call-timer {
+    font-size: 2.2rem;
+    font-weight: 300;
+    margin: 20px 0;
+    color: var(--whatsapp-dark-green);
+    text-align: center;
+}
+
+.call-controls {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 30px 20px;
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    margin: 20px 0;
+}
+
+.control-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.control-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    transition: var(--transition);
+}
+
+.control-text {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.mute-call {
+    background-color: var(--whatsapp-teal-green);
+}
+
+.mute-call:hover {
+    background-color: #2aa0d6;
+}
+
+.speaker-call {
+    background-color: #6c757d;
+}
+
+.speaker-call:hover {
+    background-color: #5a6268;
+}
+
+.end-call {
+    background-color: var(--danger-red);
+    width: 70px;
+    height: 70px;
+}
+
+.end-call:hover {
+    background-color: #e43725;
+}
+
+.call-options {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 20px;
+}
+
+.option-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.option-button:hover {
+    background-color: #f0f2f5;
+}
+
+.option-icon {
+    font-size: 1.5rem;
+    color: var(--whatsapp-dark-green);
+}
+
+.option-text {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-icon {
+    font-size: 1.2rem;
+}
+
+.notification.success .notification-icon {
+    color: var(--whatsapp-light-green);
+}
+
+.notification.error .notification-icon {
+    color: var(--danger-red);
+}
+
+/* Call Ended Screen */
+.call-ended-screen {
+    display: none;
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.call-ended-icon {
+    font-size: 4rem;
+    color: var(--danger-red);
+    margin-bottom: 20px;
+}
+
+.call-ended-message {
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    margin-bottom: 30px;
+}
+
+.call-ended-button {
+    background-color: var(--whatsapp-green);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.call-ended-button:hover {
+    background-color: var(--whatsapp-dark-green);
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        border-radius: 15px;
+    }
+
+    .caller-avatar {
+        width: 120px;
+        height: 120px;
+    }
+
+    .caller-name {
+        font-size: 1.6rem;
+    }
+
+    .call-actions {
+        gap: 30px;
+    }
+
+    .action-circle {
+        width: 70px;
+        height: 70px;
+        font-size: 1.5rem;
+    }
+
+    .call-controls {
+        gap: 20px;
+    }
+
+    .control-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+
+    .end-call {
+        width: 60px;
+        height: 60px;
+    }
+
+    .call-options {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 400px) {
+    .call-actions {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .action-button {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .action-circle {
+        width: 60px;
+        height: 60px;
+    }
+}

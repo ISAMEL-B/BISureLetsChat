@@ -1,0 +1,40 @@
+BUSureLetsChat/
+│
+├── index.php
+├── .htaccess
+├── .env
+├── .env.example
+│
+├── auth/
+├── chat/
+├── groups/
+├── calls/
+├── settings/
+│
+├── api/
+│   │
+│   ├── auth/
+│   ├── chat/
+│   ├── groups/
+│   ├── calls/
+│   ├── contacts/
+│   ├── uploads/
+│   └── notifications/
+│
+├── websocket/
+│   │
+│   ├── server.php
+│   ├── ChatSocket.php
+│   ├── CallSocket.php
+│   └── bootstrap.php
+│
+├── config/
+├── includes/
+├── services/
+├── mail/
+├── assets/
+├── uploads/
+├── cache/
+├── database/
+├── logs/
+└── vendor/

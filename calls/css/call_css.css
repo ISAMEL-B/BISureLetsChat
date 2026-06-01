@@ -1,0 +1,785 @@
+:root {
+    --whatsapp-green: #128C7E;
+    --whatsapp-dark-green: #075E54;
+    --whatsapp-light-green: #25D366;
+    --whatsapp-teal-green: #34B7F1;
+    --whatsapp-chat-bg: #e5ddd5;
+    --pro-gradient: linear-gradient(135deg, #128C7E 0%, #075E54 100%);
+    --pro-gradient-hover: linear-gradient(135deg, #0da792 0%, #064b43 100%);
+    --light: #f8f9fa;
+    --dark: #212529;
+    --text-light: #ffffff;
+    --text-dark: #495057;
+    --text-secondary: #6c757d;
+    --accent: #25D366;
+    --success: #25D366;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --radius: 12px;
+    --card-bg: #ffffff;
+    --pro-badge: #FFD700;
+    --call-primary: #25D366;
+    --call-secondary: #128C7E;
+    --call-bg: #f0f8f5;
+    --decline: #f44336;
+    --decline-hover: #e53935;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: var(--whatsapp-chat-bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+}
+
+header {
+    background: var(--pro-gradient);
+    padding: 1.2rem 1.5rem;
+    color: var(--text-light);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.back-button {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.back-button:hover {
+    transform: translateX(-3px);
+}
+
+.header-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1.2rem;
+}
+
+.header-button {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.header-button:hover {
+    transform: scale(1.1);
+}
+
+.pro-badge {
+    background: var(--pro-badge);
+    color: var(--dark);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-left: 0.8rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.search-container {
+    padding: 1rem 1.2rem;
+    background: var(--whatsapp-dark-green);
+    position: sticky;
+    top: 68px;
+    z-index: 90;
+}
+
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.9rem 1rem 0.9rem 3.2rem;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    background-color: white;
+    box-shadow: var(--shadow);
+    color: var(--text-dark);
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.input-group input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--whatsapp-light-green);
+}
+
+.input-group i {
+    position: absolute;
+    left: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--whatsapp-dark-green);
+    font-size: 1.1rem;
+}
+
+.contacts-list {
+    flex: 1;
+    overflow-y: auto;
+    background: white;
+    padding: 0.5rem 0;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    padding: 0.9rem 1.2rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+}
+
+.contact-item:hover {
+    background-color: #f9f9f9;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.contact-item:active {
+    transform: translateY(0);
+}
+
+.profile-picture {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 1.2rem;
+    flex-shrink: 0;
+    background: var(--pro-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.4rem;
+    position: relative;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.contact-item:hover .profile-picture {
+    transform: scale(1.05);
+}
+
+.profile-picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.contact-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--success);
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--success);
+}
+
+.contact-details {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.contact-name {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 0.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.contact-info {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.contact-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-left: 0.8rem;
+}
+
+.call-btn,
+.video-call-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.call-btn:after,
+.video-call-btn:after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+    border-radius: 50%;
+}
+
+.call-btn {
+    background-color: var(--call-primary);
+}
+
+.call-btn:hover {
+    background-color: var(--call-secondary);
+    transform: scale(1.1) rotate(5deg);
+}
+
+.video-call-btn {
+    background-color: var(--whatsapp-teal-green);
+}
+
+.video-call-btn:hover {
+    background-color: #2a93d5;
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--text-dark);
+}
+
+.empty-state i {
+    font-size: 3.5rem;
+    color: var(--whatsapp-dark-green);
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.empty-state h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+/* Enhanced Call Interface Styles */
+.call-interface {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--pro-gradient);
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 20px;
+    transition: opacity 0.3s ease;
+}
+
+.call-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    z-index: 2;
+}
+
+.call-contact-name {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.call-status {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.5rem;
+}
+
+.call-video-container {
+    width: 90%;
+    max-width: 600px;
+    height: 350px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    position: relative;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.remote-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #222;
+}
+
+.local-video {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 120px;
+    height: 90px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transition: var(--transition);
+}
+
+.local-video:hover {
+    transform: scale(1.05);
+}
+
+.local-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.call-controls {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+    z-index: 2;
+}
+
+.call-control-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.call-control-btn:after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+    border-radius: 50%;
+}
+
+.call-control-btn:hover {
+    transform: scale(1.1);
+}
+
+.call-end {
+    background-color: var(--decline);
+}
+
+.call-end:hover {
+    background-color: var(--decline-hover);
+}
+
+.call-mute,
+.call-video-toggle {
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.call-mute:hover,
+.call-video-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.call-audio-only .call-video-container {
+    display: none;
+}
+
+.call-timer {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced Incoming Call Interface */
+.incoming-call {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--pro-gradient);
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.incoming-call-content {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: pulse 2s infinite;
+}
+ a{
+            text-decoration:none ! important;
+        }
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); }
+    50% { transform: scale(1.02); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
+    100% { transform: scale(1); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); }
+}
+
+.caller-info {
+    margin-bottom: 2rem;
+}
+
+.caller-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    overflow: hidden;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    background: var(--pro-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.caller-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#incomingContactName {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.incoming-call p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+}
+
+.call-type {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.incoming-call-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.call-button {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.call-button:after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+    border-radius: 50%;
+}
+
+.call-button:hover {
+    transform: scale(1.1);
+}
+
+#btnAccept {
+    background-color: var(--call-primary);
+}
+
+#btnAccept:hover {
+    background-color: #1ebe5c;
+}
+
+#btnDecline {
+    background-color: var(--decline);
+}
+
+#btnDecline:hover {
+    background-color: var(--decline-hover);
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: scale(0);
+    animation: ripple 1.5s linear infinite;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.pro-feature-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--pro-badge);
+    color: var(--dark);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Scrollbar styling */
+.contacts-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.contacts-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 10px;
+}
+
+.contacts-list::-webkit-scrollbar-thumb {
+    background: var(--whatsapp-dark-green);
+    border-radius: 10px;
+}
+
+.contacts-list::-webkit-scrollbar-thumb:hover {
+    background: var(--whatsapp-green);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.contact-item {
+    animation: fadeIn 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+.contact-item:nth-child(1) { animation-delay: 0.05s; }
+.contact-item:nth-child(2) { animation-delay: 0.1s; }
+.contact-item:nth-child(3) { animation-delay: 0.15s; }
+.contact-item:nth-child(4) { animation-delay: 0.2s; }
+.contact-item:nth-child(5) { animation-delay: 0.25s; }
+.contact-item:nth-child(6) { animation-delay: 0.3s; }
+.contact-item:nth-child(7) { animation-delay: 0.35s; }
+.contact-item:nth-child(8) { animation-delay: 0.4s; }
+.contact-item:nth-child(9) { animation-delay: 0.45s; }
+.contact-item:nth-child(n+10) { animation-delay: 0.5s; }
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .main-wrapper {
+        max-width: 100%;
+    }
+
+    .header-title {
+        font-size: 1.1rem;
+    }
+
+    .contact-item {
+        padding: 0.8rem 1rem;
+    }
+
+    .profile-picture {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+    }
+
+    .call-btn,
+    .video-call-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    
+    .call-video-container {
+        width: 95%;
+        height: 300px;
+    }
+    
+    .local-video {
+        width: 100px;
+        height: 75px;
+    }
+    
+    .call-controls {
+        gap: 1.5rem;
+    }
+    
+    .call-control-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 1.3rem;
+    }
+    
+    .incoming-call-content {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+    
+    .caller-avatar {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+    }
+    
+    #incomingContactName {
+        font-size: 1.5rem;
+    }
+    
+    .call-button {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .incoming-call-buttons {
+        gap: 1.5rem;
+    }
+}
+
+/* HISTORY BUTTON CSS currently using internal CSS */
+/* .floating-history-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    outline: none;
+    padding: 15px 22px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+.floating-history-btn:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+}
+.floating-history-btn:active {
+    transform: scale(0.95);
+} */
+/* HISTORY BUTTON CSS ENDS HERE */
