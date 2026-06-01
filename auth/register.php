@@ -35,6 +35,15 @@
       box-sizing: border-box;
     }
 
+    /* Hide scrollbar but allow scrolling */
+    .form_container {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .form_container::-webkit-scrollbar {
+      display: none;
+    }
+
     .pw_hide {
       cursor: pointer;
       position: absolute;
@@ -69,40 +78,41 @@
       background: #ffffff;
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-lg);
-      padding: 40px;
+      padding: 32px 36px;
       width: 100%;
-      max-width: 460px;
+      max-width: 440px;
       transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      max-height: 92vh;
       overflow-y: auto;
-      max-height: 90vh;
+      margin: 0 16px;
     }
 
     .form_container.active {
-      max-width: 680px;
+      max-width: 660px;
     }
 
     .form h2 {
-      font-size: 1.8rem;
+      font-size: 1.7rem;
       font-weight: 700;
       color: var(--dark);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       text-align: center;
     }
 
     .form-subtitle {
       color: var(--gray);
-      font-size: 0.88rem;
-      margin-bottom: 24px;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
       text-align: center;
     }
 
     /* ============================================
-       SOCIAL LOGIN BUTTONS
+       SOCIAL LOGIN BUTTONS - COLORED ICONS
        ============================================ */
     .social-login {
       display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
     .social-btn {
@@ -110,16 +120,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 12px 16px;
+      gap: 8px;
+      padding: 11px 14px;
       border: 2px solid var(--gray-light);
       border-radius: var(--radius-md);
       background: #ffffff;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       font-family: 'Poppins', sans-serif;
-      color: var(--dark);
+      color: #555;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
@@ -134,59 +144,60 @@
       transform: translateY(0);
     }
 
-    .social-btn i,
-    .social-btn svg {
-      font-size: 1.2rem;
-      transition: transform 0.3s;
+    .social-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
     }
 
-    .social-btn:hover i,
-    .social-btn:hover svg {
+    /* Brand colored icons */
+    .social-btn.google .brand-icon {
+      color: #4285f4;
+    }
+    .social-btn.facebook .brand-icon {
+      color: #1877f2;
+    }
+    .social-btn.github .brand-icon {
+      color: #24292e;
+    }
+
+    .social-btn .brand-icon {
+      font-size: 1.3rem;
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+
+    .social-btn:hover .brand-icon {
       transform: scale(1.15);
     }
 
     /* Google */
-    .social-btn.google {
-      border-color: #ea4335;
-      color: #ea4335;
-    }
-
+    .social-btn.google { border-color: #ea4335; }
     .social-btn.google:hover {
       background: #fef2f2;
-      border-color: #ea4335;
-      box-shadow: 0 4px 15px rgba(234, 67, 53, 0.2);
+      box-shadow: 0 4px 15px rgba(234, 67, 53, 0.15);
     }
 
     /* Facebook */
-    .social-btn.facebook {
-      border-color: #1877f2;
-      color: #1877f2;
-    }
-
+    .social-btn.facebook { border-color: #1877f2; }
     .social-btn.facebook:hover {
       background: #eff6ff;
-      border-color: #1877f2;
-      box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2);
+      box-shadow: 0 4px 15px rgba(24, 119, 242, 0.15);
     }
 
     /* GitHub */
-    .social-btn.github {
-      border-color: #24292e;
-      color: #24292e;
-    }
-
+    .social-btn.github { border-color: #24292e; }
     .social-btn.github:hover {
       background: #f6f8fa;
-      border-color: #24292e;
-      box-shadow: 0 4px 15px rgba(36, 41, 46, 0.2);
+      box-shadow: 0 4px 15px rgba(36, 41, 46, 0.15);
     }
 
     /* Divider */
     .divider {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
+      gap: 14px;
+      margin-bottom: 20px;
     }
 
     .divider-line {
@@ -197,10 +208,11 @@
 
     .divider-text {
       color: var(--gray);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 1px;
+      white-space: nowrap;
     }
 
     /* ============================================
@@ -208,16 +220,16 @@
        ============================================ */
     .input_box {
       position: relative;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .input_box input {
       width: 100%;
-      padding: 14px 16px;
-      padding-left: 45px;
+      padding: 13px 14px;
+      padding-left: 42px;
       border: 2px solid var(--gray-light);
       border-radius: var(--radius-md);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-family: 'Poppins', sans-serif;
       color: var(--dark);
       background: #ffffff;
@@ -232,16 +244,16 @@
 
     .input_box input::placeholder {
       color: var(--gray);
-      font-size: 0.88rem;
+      font-size: 0.85rem;
     }
 
     .input_box i:not(.pw_hide) {
       position: absolute;
-      left: 16px;
+      left: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--gray);
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       transition: color 0.3s;
     }
 
@@ -259,36 +271,29 @@
       box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.06) !important;
     }
 
-    /* ============================================
-       ERROR MESSAGE
-       ============================================ */
+    /* Error message */
     .error-message {
-      font-size: 0.75rem;
+      font-size: 0.73rem;
       color: var(--danger);
-      margin-top: 6px;
-      padding-left: 4px;
+      margin-top: 5px;
+      padding-left: 2px;
       font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
       animation: errorSlide 0.3s ease;
     }
 
     @keyframes errorSlide {
-      0% { opacity: 0; transform: translateY(-4px); }
+      0% { opacity: 0; transform: translateY(-3px); }
       100% { opacity: 1; transform: translateY(0); }
     }
 
-    /* ============================================
-       TOP MESSAGE
-       ============================================ */
+    /* Top message */
     .message {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       text-align: center;
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: var(--radius-md);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       display: none;
     }
 
@@ -306,34 +311,30 @@
       border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
-    /* ============================================
-       TWO COLUMN GRID
-       ============================================ */
+    /* Two column grid */
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 14px;
     }
 
     .form-row .input_box {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
-    /* ============================================
-       BUTTON
-       ============================================ */
+    /* Submit button */
     .button {
       width: 100%;
-      padding: 14px;
+      padding: 13px;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: #ffffff;
       border: none;
       border-radius: var(--radius-md);
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
-      margin-top: 8px;
+      margin-top: 6px;
       letter-spacing: 0.3px;
       display: flex;
       align-items: center;
@@ -354,32 +355,28 @@
       transform: none;
     }
 
-    /* ============================================
-       REMEMBER ME - CUSTOM CHECKBOX
-       ============================================ */
+    /* Remember me checkbox */
     .option_field {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .checkbox-wrapper {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       cursor: pointer;
     }
 
-    .checkbox-wrapper input[type="checkbox"] {
-      display: none;
-    }
+    .checkbox-wrapper input[type="checkbox"] { display: none; }
 
     .custom-checkbox {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border: 2px solid var(--gray-light);
-      border-radius: 6px;
+      border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -389,7 +386,7 @@
     }
 
     .custom-checkbox i {
-      font-size: 12px;
+      font-size: 10px;
       color: #ffffff;
       opacity: 0;
       transform: scale(0);
@@ -407,36 +404,29 @@
     }
 
     .checkbox-label {
-      font-size: 0.88rem;
+      font-size: 0.84rem;
       color: var(--gray);
       user-select: none;
       font-weight: 500;
     }
 
-    .checkbox-wrapper:hover .custom-checkbox {
-      border-color: var(--primary);
-    }
+    .checkbox-wrapper:hover .custom-checkbox { border-color: var(--primary); }
 
     .forgot_pw {
       color: var(--primary);
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.83rem;
       text-decoration: none;
       transition: color 0.3s;
     }
 
-    .forgot_pw:hover {
-      color: var(--primary-dark);
-      text-decoration: underline;
-    }
+    .forgot_pw:hover { color: var(--primary-dark); text-decoration: underline; }
 
-    /* ============================================
-       TOGGLE
-       ============================================ */
+    /* Toggle */
     .login_signup {
       text-align: center;
-      margin-top: 20px;
-      font-size: 0.9rem;
+      margin-top: 18px;
+      font-size: 0.87rem;
       color: var(--gray);
     }
 
@@ -448,17 +438,10 @@
       cursor: pointer;
     }
 
-    .login_signup a:hover {
-      color: var(--primary-dark);
-      text-decoration: underline;
-    }
+    .login_signup a:hover { color: var(--primary-dark); text-decoration: underline; }
 
-    /* ============================================
-       SHAKE
-       ============================================ */
-    .shake {
-      animation: shake 0.4s ease;
-    }
+    /* Shake */
+    .shake { animation: shake 0.4s ease; }
 
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
@@ -500,12 +483,7 @@
       pointer-events: none;
     }
 
-    .success-circle {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      z-index: 2;
-    }
+    .success-circle { position: relative; width: 110px; height: 110px; z-index: 2; }
 
     .success-circle::before,
     .success-circle::after {
@@ -514,8 +492,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 120px;
-      height: 120px;
+      width: 110px;
+      height: 110px;
       border-radius: 50%;
       border: 3px solid rgba(74, 222, 128, 0.3);
       animation: circlePulse 2s ease-out infinite;
@@ -560,11 +538,11 @@
 
     @keyframes stroke { 100% { stroke-dashoffset: 0; } }
 
-    .success-text-container { z-index: 2; text-align: center; margin-top: 40px; }
+    .success-text-container { z-index: 2; text-align: center; margin-top: 35px; }
 
     .success-title {
       color: #ffffff;
-      font-size: 2.5rem;
+      font-size: 2.3rem;
       font-weight: 700;
       margin: 0;
       opacity: 0;
@@ -575,8 +553,8 @@
 
     .success-subtitle {
       color: rgba(255, 255, 255, 0.7);
-      font-size: 1.1rem;
-      margin-top: 10px;
+      font-size: 1.05rem;
+      margin-top: 8px;
       opacity: 0;
       transform: translateY(20px);
       animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
@@ -591,7 +569,7 @@
       display: flex;
       justify-content: center;
       gap: 8px;
-      margin-top: 30px;
+      margin-top: 28px;
       opacity: 0;
       animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s forwards;
       z-index: 2;
@@ -618,8 +596,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 180px;
-      height: 180px;
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
       border: 2px solid transparent;
       border-top-color: rgba(74, 222, 128, 0.6);
@@ -636,7 +614,7 @@
     .decorative-line {
       position: absolute;
       width: 1px;
-      height: 80px;
+      height: 70px;
       background: linear-gradient(to bottom, transparent, rgba(74, 222, 128, 0.5), transparent);
       z-index: 1;
       opacity: 0;
@@ -646,32 +624,82 @@
     .decorative-line.right { right: 30%; top: 40%; animation: lineAppearRight 1s ease 1.5s forwards; }
 
     @keyframes lineAppearLeft {
-      0% { opacity: 0; transform: translateX(-50px); }
+      0% { opacity: 0; transform: translateX(-40px); }
       100% { opacity: 1; transform: translateX(0); }
     }
 
     @keyframes lineAppearRight {
-      0% { opacity: 0; transform: translateX(50px); }
+      0% { opacity: 0; transform: translateX(40px); }
       100% { opacity: 1; transform: translateX(0); }
     }
 
     /* ============================================
-       RESPONSIVE
+       RESPONSIVE - FIXED
        ============================================ */
     @media (max-width: 768px) {
       .form_container {
-        max-width: 100%;
-        padding: 24px;
-        border-radius: 0;
+        max-width: calc(100% - 32px) !important;
+        margin: 0 16px;
+        padding: 24px 20px;
+        border-radius: var(--radius-lg);
+        max-height: 88vh;
       }
-      .form_container.active { max-width: 100%; }
-      .form-row { grid-template-columns: 1fr; gap: 0; }
-      .social-login { flex-direction: column; }
-      .success-title { font-size: 1.8rem; }
-      .success-subtitle { font-size: 0.9rem; }
-      .success-circle { width: 100px; height: 100px; }
-      .success-ring { width: 150px; height: 150px; }
-      .input_box input { padding: 12px 14px; padding-left: 40px; font-size: 0.9rem; }
+
+      .form_container.active {
+        max-width: calc(100% - 32px) !important;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .social-login {
+        flex-direction: row;
+        gap: 8px;
+      }
+
+      .social-btn {
+        padding: 10px 8px;
+        font-size: 0.75rem;
+        gap: 6px;
+      }
+
+      .social-btn .brand-icon {
+        font-size: 1.1rem;
+      }
+
+      .form h2 { font-size: 1.5rem; }
+      .form-subtitle { font-size: 0.8rem; margin-bottom: 16px; }
+
+      .input_box input {
+        padding: 11px 12px;
+        padding-left: 38px;
+        font-size: 0.85rem;
+      }
+
+      .success-title { font-size: 1.7rem; }
+      .success-subtitle { font-size: 0.85rem; }
+      .success-circle { width: 90px; height: 90px; }
+      .success-circle::before,
+      .success-circle::after { width: 90px; height: 90px; }
+      .success-ring { width: 130px; height: 130px; }
+    }
+
+    @media (max-width: 400px) {
+      .social-login {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .social-btn {
+        padding: 12px 14px;
+        font-size: 0.82rem;
+      }
+
+      .form_container {
+        padding: 20px 16px;
+      }
     }
   </style>
 </head>
@@ -680,7 +708,7 @@
   <header class="header">
     <nav class="nav">
       <a href="#" class="nav_logo">BISureChat</a>
-      <button class="button" id="form-open" style="width:auto;padding:10px 24px;">Login</button>
+      <button class="button" id="form-open" style="width:auto;padding:10px 22px;font-size:0.9rem;">Login</button>
     </nav>
   </header>
 
@@ -706,16 +734,16 @@
           <h2>Welcome Back</h2>
           <p class="form-subtitle">Sign in to continue your conversations</p>
 
-          <!-- Social Login -->
+          <!-- Social Login with colored brand icons -->
           <div class="social-login">
-            <button type="button" class="social-btn google" onclick="socialLogin('google')">
-              <i class="fab fa-google"></i> Google
+            <button type="button" class="social-btn google" id="googleLoginBtn">
+              <i class="fab fa-google brand-icon"></i> Google
             </button>
-            <button type="button" class="social-btn facebook" onclick="socialLogin('facebook')">
-              <i class="fab fa-facebook-f"></i> Facebook
+            <button type="button" class="social-btn facebook" id="facebookLoginBtn">
+              <i class="fab fa-facebook-f brand-icon"></i> Facebook
             </button>
-            <button type="button" class="social-btn github" onclick="socialLogin('github')">
-              <i class="fab fa-github"></i> GitHub
+            <button type="button" class="social-btn github" id="githubLoginBtn">
+              <i class="fab fa-github brand-icon"></i> GitHub
             </button>
           </div>
 
@@ -743,9 +771,7 @@
           <div class="option_field">
             <label class="checkbox-wrapper">
               <input type="checkbox" id="check" name="remember" />
-              <span class="custom-checkbox">
-                <i class="fas fa-check"></i>
-              </span>
+              <span class="custom-checkbox"><i class="fas fa-check"></i></span>
               <span class="checkbox-label">Remember me</span>
             </label>
             <a href="../auth/forgot_password" class="forgot_pw">Forgot password?</a>
@@ -771,14 +797,14 @@
 
           <!-- Social Signup -->
           <div class="social-login">
-            <button type="button" class="social-btn google" onclick="socialLogin('google')">
-              <i class="fab fa-google"></i> Google
+            <button type="button" class="social-btn google" id="googleSignupBtn">
+              <i class="fab fa-google brand-icon"></i> Google
             </button>
-            <button type="button" class="social-btn facebook" onclick="socialLogin('facebook')">
-              <i class="fab fa-facebook-f"></i> Facebook
+            <button type="button" class="social-btn facebook" id="facebookSignupBtn">
+              <i class="fab fa-facebook-f brand-icon"></i> Facebook
             </button>
-            <button type="button" class="social-btn github" onclick="socialLogin('github')">
-              <i class="fab fa-github"></i> GitHub
+            <button type="button" class="social-btn github" id="githubSignupBtn">
+              <i class="fab fa-github brand-icon"></i> GitHub
             </button>
           </div>
 
@@ -831,11 +857,9 @@
             </div>
           </div>
 
-          <label class="checkbox-wrapper" style="margin-bottom: 8px;">
+          <label class="checkbox-wrapper" style="margin-bottom: 6px;">
             <input type="checkbox" name="terms" />
-            <span class="custom-checkbox">
-              <i class="fas fa-check"></i>
-            </span>
+            <span class="custom-checkbox"><i class="fas fa-check"></i></span>
             <span class="checkbox-label">I agree to the <a href="#" style="color:var(--primary);font-weight:600;">Terms</a> & <a href="#" style="color:var(--primary);font-weight:600;">Privacy Policy</a></span>
           </label>
 
@@ -858,7 +882,7 @@
       <div class="success-circle">
         <div class="success-ring"></div>
         <div class="checkmark-container">
-          <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 52 52">
+          <svg xmlns="http://www.w3.org/2000/svg" width="75" height="75" viewBox="0 0 52 52">
             <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
             <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
           </svg>
@@ -878,7 +902,7 @@
 
   <script>
     // ============================================
-    // UI Toggle Functions
+    // UI Toggle
     // ============================================
     const formOpenBtn = document.querySelector("#form-open"),
       formCloseBtn = document.querySelector(".form_close"),
@@ -896,6 +920,7 @@
     formCloseBtn.onclick = () => {
       home.classList.remove("show");
       welcomeOverlay.style.display = "flex";
+      cancelAllSocialLogins();
     };
     signupBtn.onclick = (e) => {
       e.preventDefault();
@@ -907,27 +932,95 @@
     };
 
     // ============================================
-    // Social Login Handler
+    // SOCIAL LOGIN - CANCELABLE
     // ============================================
-    function socialLogin(provider) {
-      // Show loading state on the clicked button
-      const btn = event.target.closest('.social-btn');
+    let socialLoginTimers = {};
+    let socialLoginActive = {};
+
+    function socialLogin(provider, btnId) {
+      const btn = document.getElementById(btnId);
+      if (!btn || socialLoginActive[btnId]) return;
+
+      socialLoginActive[btnId] = true;
       const originalHTML = btn.innerHTML;
       btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Connecting...';
       btn.disabled = true;
 
-      // Redirect to social auth endpoint
-      // Replace with your actual social login URLs
-      const redirectUrls = {
-        google: 'content/social_login.php?provider=google',
-        facebook: 'content/social_login.php?provider=facebook',
-        github: 'content/social_login.php?provider=github'
+      // Add cancel capability
+      btn.innerHTML += ' <small style="font-size:0.7rem;opacity:0.7;">(click to cancel)</small>';
+      btn.style.cursor = 'pointer';
+      
+      const cancelHandler = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        cancelSocialLogin(btnId, btn, originalHTML);
+        btn.removeEventListener('click', cancelHandler);
+      };
+      
+      btn.addEventListener('click', cancelHandler, { once: false });
+
+      // Store timer
+      socialLoginTimers[btnId] = setTimeout(() => {
+        btn.removeEventListener('click', cancelHandler);
+        const redirectUrls = {
+          googleLoginBtn: 'content/social_login.php?provider=google',
+          facebookLoginBtn: 'content/social_login.php?provider=facebook',
+          githubLoginBtn: 'content/social_login.php?provider=github',
+          googleSignupBtn: 'content/social_login.php?provider=google&action=signup',
+          facebookSignupBtn: 'content/social_login.php?provider=facebook&action=signup',
+          githubSignupBtn: 'content/social_login.php?provider=github&action=signup',
+        };
+        window.location.href = redirectUrls[btnId] || 'content/social_login.php';
+      }, 1500);
+    }
+
+    function cancelSocialLogin(btnId, btn, originalHTML) {
+      if (socialLoginTimers[btnId]) {
+        clearTimeout(socialLoginTimers[btnId]);
+        delete socialLoginTimers[btnId];
+      }
+      socialLoginActive[btnId] = false;
+      btn.innerHTML = originalHTML;
+      btn.disabled = false;
+      btn.style.cursor = 'pointer';
+    }
+
+    function cancelAllSocialLogins() {
+      const buttons = {
+        googleLoginBtn: document.getElementById('googleLoginBtn'),
+        facebookLoginBtn: document.getElementById('facebookLoginBtn'),
+        githubLoginBtn: document.getElementById('githubLoginBtn'),
+        googleSignupBtn: document.getElementById('googleSignupBtn'),
+        facebookSignupBtn: document.getElementById('facebookSignupBtn'),
+        githubSignupBtn: document.getElementById('githubSignupBtn'),
       };
 
-      setTimeout(() => {
-        window.location.href = redirectUrls[provider];
-      }, 800);
+      for (let [id, btn] of Object.entries(buttons)) {
+        if (btn && socialLoginActive[id]) {
+          cancelSocialLogin(id, btn, btn.getAttribute('data-original') || btn.innerHTML);
+        }
+      }
     }
+
+    // Attach social login handlers
+    document.getElementById('googleLoginBtn').addEventListener('click', function() {
+      if (!socialLoginActive['googleLoginBtn']) socialLogin('google', 'googleLoginBtn');
+    });
+    document.getElementById('facebookLoginBtn').addEventListener('click', function() {
+      if (!socialLoginActive['facebookLoginBtn']) socialLogin('facebook', 'facebookLoginBtn');
+    });
+    document.getElementById('githubLoginBtn').addEventListener('click', function() {
+      if (!socialLoginActive['githubLoginBtn']) socialLogin('github', 'githubLoginBtn');
+    });
+    document.getElementById('googleSignupBtn').addEventListener('click', function() {
+      if (!socialLoginActive['googleSignupBtn']) socialLogin('google', 'googleSignupBtn');
+    });
+    document.getElementById('facebookSignupBtn').addEventListener('click', function() {
+      if (!socialLoginActive['facebookSignupBtn']) socialLogin('facebook', 'facebookSignupBtn');
+    });
+    document.getElementById('githubSignupBtn').addEventListener('click', function() {
+      if (!socialLoginActive['githubSignupBtn']) socialLogin('github', 'githubSignupBtn');
+    });
 
     // ============================================
     // Password Toggle
@@ -996,13 +1089,13 @@
       }
     }
 
-    function initParticles(count = 80) {
+    function initParticles(count = 70) {
       particles = [];
       for (let i = 0; i < count; i++) particles.push(new Particle());
     }
 
     function connectParticles() {
-      const maxDistance = 150;
+      const maxDistance = 140;
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -1069,16 +1162,14 @@
       e.preventDefault();
       clearErrors(this);
       const form = this;
-      const userInput = form.user.value.trim();
-      const passInput = form.password.value.trim();
       let hasErrors = false;
 
-      if (!userInput) {
+      if (!form.user.value.trim()) {
         document.getElementById("login-user-error").innerText = "Please enter your username, email, or phone";
         form.user.classList.add('error');
         hasErrors = true;
       }
-      if (!passInput) {
+      if (!form.password.value.trim()) {
         document.getElementById("login-password-error").innerText = "Please enter your password";
         form.password.classList.add('error');
         hasErrors = true;
@@ -1103,8 +1194,8 @@
       .then(data => {
         submitBtn.innerHTML = originalHTML;
         submitBtn.disabled = false;
-        const loginMsg = document.getElementById("login-message");
-        loginMsg.innerText = ''; loginMsg.className = 'message';
+        document.getElementById("login-message").innerText = '';
+        document.getElementById("login-message").className = 'message';
         clearErrors(form);
 
         if (data.success) {
@@ -1120,17 +1211,18 @@
             }
           }
           if (data.message) {
-            loginMsg.innerText = data.message;
-            loginMsg.classList.add('error-message-top');
+            const msg = document.getElementById("login-message");
+            msg.innerText = data.message;
+            msg.classList.add('error-message-top');
           }
         }
       })
-      .catch(err => {
+      .catch(() => {
         submitBtn.innerHTML = originalHTML;
         submitBtn.disabled = false;
-        const loginMsg = document.getElementById("login-message");
-        loginMsg.innerText = "Network error. Please try again.";
-        loginMsg.classList.add('error-message-top');
+        const msg = document.getElementById("login-message");
+        msg.innerText = "Network error. Please try again.";
+        msg.classList.add('error-message-top');
       });
     };
 
@@ -1219,7 +1311,7 @@
           }
         }
       })
-      .catch(err => {
+      .catch(() => {
         submitBtn.innerHTML = originalHTML;
         submitBtn.disabled = false;
         const msg = document.getElementById("signup-message");
