@@ -3,7 +3,8 @@
  * BUSure Chat - Settings Page
  * ✅ Updated to match busure_lets_chat schema and BUSureLetsChat structure
  */
-session_start();
+require_once __DIR__ . '/../includes/auth_check.php';
+
 require_once __DIR__ . '/../config/db.php';
 
 // Check if the user is logged in.

@@ -3,7 +3,7 @@
  * BUSure Chat - Profile Page
  * ✅ Fixed: Paths, upload directory, and redirect loops
  */
-session_start();
+require_once __DIR__ . '/../includes/auth_check.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -17,7 +17,6 @@ if (!isset($_SESSION['user_id'])) {
 
 // ✅ FIXED: Correct path from settings/ to config/
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../includes/auth_check.php';
 
 $user_id = $_SESSION['user_id'];
 

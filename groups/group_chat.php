@@ -8,7 +8,8 @@ date_default_timezone_set('Africa/Kampala');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();
+require_once __DIR__ . '/../includes/auth_check.php';
+
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../auth/login');
     exit();
@@ -181,7 +182,8 @@ $stmt->close();
 <div class="main-wrapper">
     <header>
         <div class="header-left">
-            <a href="my_groups" class="back-button"><i class="fas fa-arrow-left"></i></a>
+        <?php require_once __DIR__ . '/../includes/cd_hamburger.php';?>
+            <!-- <a href="my_groups" class="back-button"><i class="fas fa-arrow-left"></i></a> -->
             <div class="group-info" onclick="window.location.href='group_info?group_id=<?= $group_id ?>'">
                 <div class="group-avatar">
                     <?php if (!empty($group['group_photo'])): ?>

@@ -7,12 +7,13 @@
 // Set timezone
 date_default_timezone_set('Africa/Kampala');
 
+require_once __DIR__ . '/../includes/auth_check.php';
+
 // Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../config/db.php';;
 
 // Check dark mode preference from cookie
 $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';

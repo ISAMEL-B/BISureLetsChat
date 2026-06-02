@@ -8,16 +8,15 @@
 // Set timezone
 date_default_timezone_set('Africa/Kampala');
 
+require_once __DIR__ . '/../includes/auth_check.php';
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
-session_start();
 
 // Check dark mode preference
 $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';
 
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../includes/auth_check.php';
 
 // Get group ID from URL
 $group_id = isset($_GET['group_id']) ? intval($_GET['group_id']) : 0;

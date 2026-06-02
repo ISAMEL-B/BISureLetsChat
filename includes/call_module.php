@@ -89,7 +89,7 @@ $current_user_id = $_SESSION['user_id'];
     height: 100%; 
     object-fit: cover; 
     background: #1a1a1a;
-    transform: scaleX(-1);  /* Add this to un-mirror if it's arriving mirrored */
+    transform: scaleX(-1);
 }
 
 .cl-remote-video {
@@ -100,11 +100,17 @@ $current_user_id = $_SESSION['user_id'];
     width: 120px; height: 170px; border-radius: 16px;
     overflow: hidden; border: 2px solid rgba(255,255,255,0.6);
     background: #2a2a2a; z-index: 10;
-    cursor: grab; touch-action: none; user-select: none;
-    transition: opacity 0.3s ease;
+    touch-action: none; user-select: none;
+    -webkit-user-select: none;
+    transition: box-shadow 0.2s ease, opacity 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
-.cl-local-video-pip:active { cursor: grabbing; }
-.cl-local-video-pip.dragging { opacity: 0.85; }
+.cl-local-video-pip.dragging { 
+    opacity: 0.9; 
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    transition: none;
+    z-index: 11;
+}
 .cl-local-video-pip video {
     width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);
     pointer-events: none;
@@ -161,6 +167,7 @@ $current_user_id = $_SESSION['user_id'];
     width: 52px; height: 52px; border-radius: 50%; border: none;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     font-size: 1.1rem; color: white;
+    -webkit-tap-highlight-color: transparent;
 }
 .cl-ctrl-secondary { background: rgba(255,255,255,0.15); }
 .cl-ctrl-secondary.cl-active-ctrl { background: rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.6); }
@@ -187,6 +194,7 @@ $current_user_id = $_SESSION['user_id'];
     width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     font-size: 1.3rem; color: white;
+    -webkit-tap-highlight-color: transparent;
 }
 .cl-incoming-decline { background: #E74C3C; }
 .cl-incoming-accept { background: #25D366; }
@@ -199,10 +207,9 @@ $current_user_id = $_SESSION['user_id'];
 .cl-toast-info { background: #128C7E; }
 .cl-toast-error { background: #E74C3C; }
 
-/* Responsive PIP */
 @media (max-width: 480px) {
     .cl-local-video-pip {
-        width: 90px; height: 130px; top: 50px; right: 10px;
+        width: 100px; height: 150px; top: 60px; right: 10px;
     }
 }
 </style>
@@ -221,6 +228,7 @@ window._callModuleLoaded = true;
     
     var basePath = '<?= rtrim(dirname($_SERVER['SCRIPT_NAME'], 2), '/') ?>';
     var CALLS_PATH = basePath + '/calls';
+    var SETTINGS_PATH = basePath + '/settings';
     
     var ringtone = new Audio(CALLS_PATH + '/rington.mp3');
     ringtone.loop = true;
@@ -231,7 +239,7 @@ window._callModuleLoaded = true;
         isVideo: false, remoteId: null, remoteName: null,
         remotePicture: null, pendingOffer: null,
         timer: null, seconds: 0, isMuted: false, isCameraOff: false,
-        dbCallId: null
+        dbCallId: null, acceptedCallId: null
     };
     
     var callingDotsInterval = null;
@@ -239,51 +247,133 @@ window._callModuleLoaded = true;
     
     function $(id) { return document.getElementById(id); }
     
-    // ============= DRAG FUNCTIONALITY FOR PIP =============
+    // ============= DYNAMIC FETCH CALLER PROFILE PHOTO =============
+    function fetchCallerPhoto(userId, callback) {
+        if (!userId) {
+            callback(null);
+            return;
+        }
+        
+        // Try to get photo from the WebSocket message first
+        // If not available, fetch from server
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', SETTINGS_PATH + '/get_user_photo.php?user_id=' + userId, true);
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.success && response.photo_url) {
+                        callback(response.photo_url);
+                        return;
+                    }
+                } catch(e) {}
+            }
+            callback(null);
+        };
+        xhr.onerror = function() {
+            callback(null);
+        };
+        xhr.send();
+    }
+    
+    function updateIncomingAvatar(photoUrl) {
+        var iavatar = $('clIncomingAvatar');
+        if (!iavatar) return;
+        
+        if (photoUrl && photoUrl.trim() !== '') {
+            iavatar.innerHTML = '<img src="' + photoUrl + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null; this.style.display=\'none\'; this.parentElement.innerHTML=\'<i class=\\\'fas fa-user\\\'></i>\'">';
+        } else {
+            iavatar.innerHTML = '<i class="fas fa-user"></i>';
+        }
+    }
+    
+    function updateAudioAvatarUI(photoUrl) {
+        var aa = $('clAudioAvatar');
+        if (!aa) return;
+        
+        if (photoUrl && photoUrl.trim() !== '') {
+            aa.innerHTML = '<img src="' + photoUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.onerror=null; this.style.display=\'none\'; this.parentElement.innerHTML=\'<i class=\\\'fas fa-user\\\'></i>\'">';
+        } else {
+            aa.innerHTML = '<i class="fas fa-user"></i>';
+        }
+    }
+    
+    // ============= ADVANCED DRAG FOR PIP (Works on mobile & desktop) =============
     function makeDraggable(el) {
         if (!el) return;
         
         var isDragging = false;
         var startX, startY, startLeft, startTop;
+        var lastTap = 0;
         
-        el.addEventListener('pointerdown', function(e) {
-            // Only drag from the PIP itself, not the video inside
+        function getPos(e) {
+            return {
+                x: e.touches ? e.touches[0].clientX : e.clientX,
+                y: e.touches ? e.touches[0].clientY : e.clientY
+            };
+        }
+        
+        function onStart(e) {
+            var now = Date.now();
+            if (now - lastTap < 300) {
+                e.preventDefault();
+                return;
+            }
+            lastTap = now;
+            
             isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = parseInt(el.style.left) || el.getBoundingClientRect().left;
-            startTop = parseInt(el.style.top) || el.getBoundingClientRect().top;
+            var pos = getPos(e);
+            startX = pos.x;
+            startY = pos.y;
+            
+            var rect = el.getBoundingClientRect();
+            startLeft = rect.left;
+            startTop = rect.top;
+            
             el.classList.add('dragging');
-            el.setPointerCapture(e.pointerId);
             e.preventDefault();
-        });
+        }
         
-        el.addEventListener('pointermove', function(e) {
+        function onMove(e) {
             if (!isDragging) return;
             
-            var dx = e.clientX - startX;
-            var dy = e.clientY - startY;
-            var parent = el.parentElement.getBoundingClientRect();
+            var pos = getPos(e);
+            var dx = pos.x - startX;
+            var dy = pos.y - startY;
             
-            var newLeft = Math.min(Math.max(startLeft + dx, 0), parent.width - el.offsetWidth - 10);
-            var newTop = Math.min(Math.max(startTop + dy, 0), parent.height - el.offsetHeight - 10);
+            var newLeft = startLeft + dx;
+            var newTop = startTop + dy;
+            
+            var pipWidth = el.offsetWidth;
+            var pipHeight = el.offsetHeight;
+            var maxLeft = window.innerWidth - pipWidth - 8;
+            var maxTop = window.innerHeight - pipHeight - 100;
+            
+            newLeft = Math.max(8, Math.min(newLeft, maxLeft));
+            newTop = Math.max(8, Math.min(newTop, maxTop));
             
             el.style.left = newLeft + 'px';
             el.style.top = newTop + 'px';
             el.style.right = 'auto';
-        });
+            el.style.bottom = 'auto';
+            
+            e.preventDefault();
+        }
         
-        el.addEventListener('pointerup', function() {
+        function onEnd() {
+            if (!isDragging) return;
             isDragging = false;
             el.classList.remove('dragging');
-            el.style.cursor = 'grab';
-        });
+        }
         
-        el.addEventListener('pointercancel', function() {
-            isDragging = false;
-            el.classList.remove('dragging');
-            el.style.cursor = 'grab';
-        });
+        el.addEventListener('touchstart', onStart, { passive: false });
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onEnd);
+        document.addEventListener('touchcancel', onEnd);
+        
+        el.addEventListener('mousedown', onStart);
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEnd);
     }
     
     function resetPipPosition() {
@@ -291,7 +381,8 @@ window._callModuleLoaded = true;
         if (lp) {
             lp.style.left = '';
             lp.style.top = '';
-            lp.style.right = '16px';
+            lp.style.right = window.innerWidth <= 480 ? '10px' : '16px';
+            lp.style.bottom = 'auto';
         }
     }
     
@@ -397,7 +488,11 @@ window._callModuleLoaded = true;
             if (state.isVideo) {
                 var ai = $('clAudioIndicator'), lp = $('clLocalPip');
                 if (ai) ai.style.display = 'none';
-                if (lp) lp.style.display = 'block';
+                if (lp) { 
+                    lp.style.display = 'block'; 
+                    resetPipPosition();
+                    makeDraggable(lp);
+                }
             }
         };
         
@@ -412,6 +507,7 @@ window._callModuleLoaded = true;
                     statusOverlay.style.color = '#25D366';
                 }
                 startTimer();
+                state.acceptedCallId = state.dbCallId;
             } else if (s === 'failed' || s === 'disconnected' || s === 'closed') {
                 if (state.callState === 'connected') {
                     showToast('Call disconnected', 'error');
@@ -448,6 +544,9 @@ window._callModuleLoaded = true;
         
         console.log('Accepting call from:', state.remoteName);
         
+        state.acceptedCallId = state.dbCallId;
+        state.callState = 'connecting';
+        
         var io = $('clIncomingOverlay');
         if (io) io.classList.remove('cl-active');
         
@@ -469,7 +568,7 @@ window._callModuleLoaded = true;
             if (lp) { 
                 lp.style.display = 'block'; 
                 resetPipPosition();
-                makeDraggable(lp);  // ✅ Enable dragging
+                makeDraggable(lp);
             }
             if (rv) rv.style.display = 'block';
             state.isCameraOff = false;
@@ -480,12 +579,7 @@ window._callModuleLoaded = true;
             if (ai2) ai2.style.display = 'block';
             if (lp2) lp2.style.display = 'none';
             if (rv2) rv2.style.display = 'none';
-            var aa = $('clAudioAvatar');
-            if (aa) {
-                aa.innerHTML = state.remotePicture 
-                    ? '<img src="' + state.remotePicture + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
-                    : '<i class="fas fa-user"></i>';
-            }
+            updateAudioAvatarUI(state.remotePicture);
         }
         
         var co = $('clCallOverlay');
@@ -644,7 +738,7 @@ window._callModuleLoaded = true;
             callState: 'idle', localStream: null, remoteStream: null, pc: null,
             isVideo: false, remoteId: null, remoteName: null, remotePicture: null,
             pendingOffer: null, timer: null, seconds: 0, isMuted: false, isCameraOff: false,
-            dbCallId: null
+            dbCallId: null, acceptedCallId: null
         };
         
         var co = $('clCallOverlay'), io = $('clIncomingOverlay');
@@ -661,7 +755,7 @@ window._callModuleLoaded = true;
         if (lp) lp.style.display = 'none';
         if (rv) rv.style.display = 'none';
         
-        resetPipPosition();  // ✅ Reset PIP position
+        resetPipPosition();
     }
     
     // ============= WEBSOCKET =============
@@ -676,12 +770,16 @@ window._callModuleLoaded = true;
         var msg = JSON.parse(ev.data);
         if (String(msg.to) !== MY_ID) return;
         
-        console.log('Call module: Received', msg.type);
+        console.log('Call module: Received', msg.type, 'callId:', msg.callId);
         
         switch(msg.type) {
             case 'offer':
-                if (isRinging || state.callState === 'connected' || state.callState === 'dialing') {
-                    console.log('Ignoring duplicate offer');
+                if (isRinging || state.callState === 'connected' || state.callState === 'dialing' || state.callState === 'connecting') {
+                    console.log('Ignoring offer - already in call state:', state.callState);
+                    return;
+                }
+                if (state.acceptedCallId && msg.callId && String(state.acceptedCallId) === String(msg.callId)) {
+                    console.log('Ignoring duplicate offer for already accepted call:', msg.callId);
                     return;
                 }
                 
@@ -697,16 +795,25 @@ window._callModuleLoaded = true;
                 
                 var iname = $('clIncomingName');
                 var itype = $('clIncomingType');
-                var iavatar = $('clIncomingAvatar');
                 var io = $('clIncomingOverlay');
                 
                 if (iname) iname.textContent = state.remoteName;
                 if (itype) itype.textContent = state.isVideo ? '📹 Video Call' : '📞 Voice Call';
-                if (iavatar) {
-                    iavatar.innerHTML = state.remotePicture 
-                        ? '<img src="' + state.remotePicture + '" style="width:100%;height:100%;object-fit:cover;">'
-                        : '<i class="fas fa-user"></i>';
+                
+                // ✅ Try WebSocket picture first, if empty fetch dynamically
+                if (msg.fromPicture && msg.fromPicture.trim() !== '') {
+                    state.remotePicture = msg.fromPicture;
+                    updateIncomingAvatar(msg.fromPicture);
+                } else {
+                    // Fetch photo dynamically from server
+                    fetchCallerPhoto(state.remoteId, function(photoUrl) {
+                        state.remotePicture = photoUrl || '';
+                        updateIncomingAvatar(photoUrl);
+                    });
+                    // Show placeholder while loading
+                    updateIncomingAvatar(null);
                 }
+                
                 if (io) io.classList.add('cl-active');
                 
                 ringtone.currentTime = 0;
