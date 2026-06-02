@@ -680,28 +680,6 @@ $result = $stmt->get_result();
 <button class="cl-fab-history" id="clHistoryBtn" title="Call History"><i class="fas fa-history"></i></button>
 <div id="clToastContainer"></div>
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
-
-
-
-
-    // Check for pending call (from another page)
-    <?php if (isset($_SESSION['pending_call'])): ?>
-        const pendingCall = <?= json_encode($_SESSION['pending_call']) ?>;
-        // Auto-accept the call
-        window.addEventListener('load', () => {
-            state.remoteId = pendingCall.from;
-            state.remoteName = pendingCall.fromName;
-            state.remotePicture = pendingCall.fromPicture;
-            state.isVideo = pendingCall.isVideo;
-            state.pendingOffer = null; // Will be re-negotiated
-            state.dbCallId = pendingCall.callId;
-            
-            acceptCall();
-        });
-        <?php unset($_SESSION['pending_call']); ?>
-    <?php endif; ?>
-
-
     <script>
         // ✅ User info from PHP session
         window.SELF_ID = <?= json_encode($current_user_id); ?>;
@@ -730,6 +708,8 @@ $result = $stmt->get_result();
 
         let clCurrentContact = null;
         let callingDotsInterval = null;
+        let offerRetryInterval = null;
+        let isRinging = false;  // ✅ Track if already ringing
 
         // ============= CALL API HELPER =============
         function callAPI(action, data = {}) {
@@ -767,6 +747,11 @@ $result = $stmt->get_result();
             if (callingDotsInterval) clearInterval(callingDotsInterval);
             callingDotsInterval = null;
             callStatusOverlay.classList.remove('cl-dots-anim', 'cl-calling-text');
+        }
+
+        function stopOfferRetry() {
+            if (offerRetryInterval) clearInterval(offerRetryInterval);
+            offerRetryInterval = null;
         }
 
         // ============= PIP AVATAR =============
@@ -814,7 +799,6 @@ $result = $stmt->get_result();
 
         // ============= MODAL =============
         function clOpenModal(item) {
-            // Get the picture URL - it's already a full path from PHP
             let pictureUrl = item.dataset.userPicture || '';
             
             clCurrentContact = {
@@ -827,7 +811,6 @@ $result = $stmt->get_result();
             modalName.textContent = clCurrentContact.name;
             modalPhone.textContent = clCurrentContact.phone;
             
-            // Set modal avatar with proper error handling
             if (pictureUrl && pictureUrl.trim() !== '') {
                 modalAvatar.innerHTML = '<img src="' + pictureUrl + '" alt="' + clCurrentContact.name + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null; this.style.display=\'none\'; this.parentElement.innerHTML=\'<i class=\\\'fas fa-user\\\'></i>\'">';
             } else {
@@ -882,7 +865,6 @@ $result = $stmt->get_result();
         const ICE_CONFIG = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         const ringtone = new Audio('rington.mp3'); ringtone.loop = true;
 
-        // Prime ringtone on first user interaction
         (function() {
             const u = () => { 
                 ringtone.play().then(() => { ringtone.pause(); ringtone.currentTime = 0; }).catch(() => {}); 
@@ -894,7 +876,7 @@ $result = $stmt->get_result();
         })();
 
         let state = {
-            callState: 'idle',      // idle | dialing | connected
+            callState: 'idle',
             localStream: null,
             remoteStream: null,
             pc: null,
@@ -907,13 +889,16 @@ $result = $stmt->get_result();
             seconds: 0,
             isMuted: false,
             isCameraOff: false,
-            dbCallId: null          // ✅ Database call ID
+            dbCallId: null,
+            lastOffer: null
         };
 
         // ============= TIMER =============
         function startTimer() {
             stopTimer(); 
             stopCallingDots();
+            stopOfferRetry();
+            isRinging = false;
             state.seconds = 0;
             callTimerOverlay.textContent = '00:00';
             callStatusOverlay.textContent = 'Connected';
@@ -967,12 +952,18 @@ $result = $stmt->get_result();
             
             switch (msg.type) {
                 case 'offer':
+                    // ✅ Ignore duplicate offers if already ringing or connected
+                    if (isRinging || state.callState === 'connected' || state.callState === 'dialing') return;
+                    
+                    stopOfferRetry();
+                    isRinging = true;
                     state.isVideo = !!msg.isVideo;
                     state.remoteId = String(msg.from);
                     state.remoteName = msg.fromName || 'User';
                     state.remotePicture = msg.fromPicture || '';
                     state.pendingOffer = msg.sdp;
-                    state.dbCallId = msg.callId || null;  // ✅ Get call ID from offer
+                    state.dbCallId = msg.callId || null;
+                    state.callState = 'ringing';
                     incomingName.textContent = state.remoteName;
                     incomingType.textContent = state.isVideo ? '📹 Video Call' : '📞 Voice Call';
                     updateIncomingAvatarEl();
@@ -982,9 +973,10 @@ $result = $stmt->get_result();
                     break;
                     
                 case 'answer':
+                    stopOfferRetry();
+                    isRinging = false;
                     if (!state.pc) return;
                     await state.pc.setRemoteDescription(msg.sdp);
-                    // ✅ Mark as answered in DB
                     if (state.dbCallId) {
                         callAPI('answer_call', { call_id: state.dbCallId });
                     }
@@ -998,13 +990,15 @@ $result = $stmt->get_result();
                     break;
                     
                 case 'decline': 
-                    // ✅ DB already updated by the decliner
+                    stopOfferRetry();
+                    isRinging = false;
                     showToast((state.remoteName || 'User') + ' declined', 'error'); 
                     fullReset(); 
                     break;
                     
                 case 'hangup': 
-                    // ✅ DB already updated by the hanger
+                    stopOfferRetry();
+                    isRinging = false;
                     showToast((state.remoteName || 'User') + ' ended call', 'error'); 
                     fullReset(); 
                     break;
@@ -1017,13 +1011,12 @@ $result = $stmt->get_result();
         };
 
         function send(payload) { 
-            // ✅ Always include call_id in WebSocket messages
             sock.send(JSON.stringify({ 
                 from: MY_ID, 
                 fromName: MY_NAME, 
                 to: state.remoteId, 
                 fromPicture: '', 
-                callId: state.dbCallId,  // ✅ Pass call ID
+                callId: state.dbCallId,
                 ...payload 
             })); 
         }
@@ -1050,7 +1043,6 @@ $result = $stmt->get_result();
                     startTimer();
                 } else if (['failed','disconnected','closed'].includes(s)) { 
                     showToast('Call disconnected', 'error'); 
-                    // ✅ End call in DB on connection failure
                     if (state.dbCallId) {
                         callAPI('end_call', { call_id: state.dbCallId, duration: state.seconds });
                     }
@@ -1089,7 +1081,6 @@ $result = $stmt->get_result();
             updatePipAvatar();
             startCallingDots('Calling');
 
-            // ✅ Show call UI
             if (video) {
                 audioIndicator.style.display = 'none';
                 localPip.style.display = 'block';
@@ -1106,16 +1097,13 @@ $result = $stmt->get_result();
             callOverlay.classList.add('cl-active');
             makeDraggable(localPip);
 
-            // ✅ Save call to database FIRST
             const apiResult = await callAPI('start_call', { 
                 receiver_id: contact.id, 
                 call_type: video ? 'video' : 'voice' 
             });
 
-            // ✅ Get media
             state.localStream = await requestMedia(video);
             if (!state.localStream) {
-                // Mark as missed if media fails
                 if (state.dbCallId) {
                     await callAPI('missed_call', { call_id: state.dbCallId });
                 }
@@ -1128,14 +1116,36 @@ $result = $stmt->get_result();
             
             const offer = await state.pc.createOffer();
             await state.pc.setLocalDescription(offer);
+            state.lastOffer = { sdp: offer, isVideo: video };
             send({ type: 'offer', sdp: offer, isVideo: video });
             state.callState = 'dialing';
+            
+            // ✅ Retry every 3 seconds, max 20 times (60 seconds)
+            let retries = 0;
+            stopOfferRetry();
+            offerRetryInterval = setInterval(() => {
+                if (state.callState !== 'dialing' || retries >= 20) {
+                    stopOfferRetry();
+                    if (retries >= 20 && state.callState === 'dialing') {
+                        showToast('No answer', 'error');
+                        if (state.dbCallId) {
+                            callAPI('missed_call', { call_id: state.dbCallId });
+                        }
+                        fullReset();
+                    }
+                    return;
+                }
+                send({ type: 'offer', sdp: state.lastOffer.sdp, isVideo: state.lastOffer.isVideo });
+                retries++;
+            }, 3000);
         }
 
         // ============= ACCEPT CALL (RECEIVER) =============
         async function acceptCall() {
             ringtone.pause(); 
             ringtone.currentTime = 0;
+            stopOfferRetry();
+            isRinging = false;
             
             if (!state.pendingOffer || !state.remoteId) return;
             
@@ -1163,14 +1173,12 @@ $result = $stmt->get_result();
             callOverlay.classList.add('cl-active');
             makeDraggable(localPip);
 
-            // ✅ Mark as answered in DB
             if (state.dbCallId) {
                 await callAPI('answer_call', { call_id: state.dbCallId });
             }
 
             state.localStream = await requestMedia(state.isVideo);
             if (!state.localStream) { 
-                // Decline if media fails
                 if (state.dbCallId) {
                     await callAPI('decline_call', { call_id: state.dbCallId });
                 }
@@ -1193,8 +1201,9 @@ $result = $stmt->get_result();
         async function declineCall() { 
             ringtone.pause(); 
             ringtone.currentTime = 0; 
+            stopOfferRetry();
+            isRinging = false;
             
-            // ✅ Mark as declined in DB
             if (state.dbCallId) {
                 await callAPI('decline_call', { call_id: state.dbCallId });
             }
@@ -1207,8 +1216,9 @@ $result = $stmt->get_result();
         async function hangup() { 
             ringtone.pause(); 
             ringtone.currentTime = 0; 
+            stopOfferRetry();
+            isRinging = false;
             
-            // ✅ End call in DB with duration
             if (state.dbCallId) {
                 await callAPI('end_call', { 
                     call_id: state.dbCallId, 
@@ -1267,6 +1277,8 @@ $result = $stmt->get_result();
             ringtone.pause(); 
             ringtone.currentTime = 0;
             stopCallingDots();
+            stopOfferRetry();
+            isRinging = false;
             cleanupPeer(); 
             stopStreams(); 
             stopTimer();
@@ -1285,7 +1297,8 @@ $result = $stmt->get_result();
                 pc: null,
                 timer: null,
                 seconds: 0,
-                dbCallId: null       // ✅ Reset DB call ID
+                dbCallId: null,
+                lastOffer: null
             };
             
             callOverlay.classList.remove('cl-active');
@@ -1326,6 +1339,35 @@ $result = $stmt->get_result();
         $('clBtnVideo').addEventListener('click', toggleVideo);
         $('clBtnFlip').addEventListener('click', flipCamera);
         $('clBtnSpeaker').addEventListener('click', toggleSpeaker);
+    </script>
+
+    <script>
+    <?php if (isset($_SESSION['pending_call'])): ?>
+        const pendingCall = <?= json_encode($_SESSION['pending_call']) ?>;
+        <?php unset($_SESSION['pending_call']); ?>
+        
+        (function waitForSocket() {
+            if (typeof sock !== 'undefined' && sock.readyState === WebSocket.OPEN) {
+                state.isVideo = pendingCall.isVideo;
+                state.remoteId = String(pendingCall.from);
+                state.remoteName = pendingCall.fromName;
+                state.remotePicture = pendingCall.fromPicture || '';
+                state.pendingOffer = null;
+                state.dbCallId = pendingCall.callId || null;
+                state.callState = 'ringing';
+                isRinging = true;
+                
+                incomingName.textContent = state.remoteName;
+                incomingType.textContent = state.isVideo ? '📹 Video Call' : '📞 Voice Call';
+                updateIncomingAvatarEl();
+                incomingOverlay.classList.add('cl-active');
+                ringtone.currentTime = 0;
+                ringtone.play().catch(() => {});
+            } else {
+                setTimeout(waitForSocket, 300);
+            }
+        })();
+    <?php endif; ?>
     </script>
 </body>
 </html>

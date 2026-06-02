@@ -20,9 +20,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
 // Get current user ID
 $current_user_id = $_SESSION['user_id'];
 
-include __DIR__ . '/call/call_system.php';
-include __DIR__ . '/call/global_call_ui.php'
-
 ?>
 
 <!DOCTYPE html>
@@ -770,6 +767,8 @@ include __DIR__ . '/call/global_call_ui.php'
     <audio id="notifySound" src="notification.mp3" preload="auto"></audio>
 
     <?php include __DIR__ . '/../includes/navbar.php'; ?>
+
+    <?php include __DIR__ . '/../includes/call_receiver.php'; ?>
     
     <script>
         // Contact Management with AJAX - Optimized for speed
