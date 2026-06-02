@@ -8,11 +8,11 @@ require_once __DIR__ . '/../config/db.php';
 
 // Check if the user is logged in.
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../auth/login');
+    header('Location: ../auth/register');
     exit();
 }
 
-// ✅ FIXED: Fetch user data from users table
+// ✅ Fetch user data from users table
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT id, fullname, username, email, phone, profile_photo, bio, status_message, created_at FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
@@ -400,8 +400,8 @@ $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';
 
     <div class="settings-header">
         <div>
-            <?php if (file_exists(__DIR__ . '/../../includes/cd_hamburger.php')) 
-                include __DIR__ . '/../../includes/cd_hamburger.php'; ?>
+            <?php if (file_exists(__DIR__ . '/../includes/cd_hamburger.php')) 
+                include __DIR__ . '/../includes/cd_hamburger.php'; ?>
         </div>
         <div class="header-title">Settings</div>
     </div>
@@ -504,7 +504,7 @@ $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';
                 <div class="section-title">Security</div>
 
                 <!-- ✅ FIXED: Updated delete account link -->
-                <a href="../auth/delete_account" class="setting-item danger-zone">
+                <a href="../auth/account/delete_account" class="setting-item danger-zone">
                     <div class="setting-icon"><i class="fas fa-user-slash"></i></div>
                     <div class="setting-content">
                         <div class="setting-title">Delete Account</div>
@@ -541,7 +541,7 @@ $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';
 
         <div class="settings-footer">
             <div>BisureChat</div>
-            <div class="app-version">Version 1.0.0</div>
+            <div class="app-version">Version 1.3.0</div>
         </div>
     </div>
 
@@ -626,7 +626,7 @@ $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';
         });
 
         document.querySelector('.modal-confirm').addEventListener('click', function() {
-            window.location.href = '../auth/delete_account';
+            window.location.href = '../auth/account/home';
         });
     </script>
 </body>

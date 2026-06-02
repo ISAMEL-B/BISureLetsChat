@@ -2,16 +2,17 @@
 /**
  * BUSure Chat - Private Converse (Chat) Page
  * ✅ Updated to match busure_lets_chat schema
+ * ✅ Includes read receipts, ticks, reply functionality
  */
 
 // Start the session to manage user sessions
 session_start();
 
 // Database connection
-require_once __DIR__ . '/../config/db.php';
-
+require_once __DIR__ . '/../../config/db.php';
+    
 // Check if the user is logged in
-require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
 
 $current_user_id = $_SESSION['user_id'];
 
@@ -24,7 +25,7 @@ if (isset($_GET['contactId'])) {
 }
 
 // ✅ FIXED: Fetch contact info from users table
-$contact_sql = "SELECT id, fullname, username, profile_photo, is_online, last_seen FROM users WHERE id = ?";
+$contact_sql = "SELECT id, fullname, username, profile_photo, is_online, last_seen, status_message FROM users WHERE id = ?";
 $contact_stmt = $conn->prepare($contact_sql);
 $contact_stmt->bind_param("i", $contact_id);
 $contact_stmt->execute();
@@ -36,6 +37,7 @@ if ($contact_result->num_rows > 0) {
     $contact_username = htmlspecialchars($contact_row['username']);
     $contact_is_online = $contact_row['is_online'];
     $contact_last_seen = $contact_row['last_seen'];
+    $contact_status_message = htmlspecialchars($contact_row['status_message'] ?? 'Available');
     
     // ✅ FIXED: Profile photo path
     $contact_profile_photo = !empty($contact_row['profile_photo']) 
@@ -83,17 +85,18 @@ if ($conv_result->num_rows > 0) {
     $add_participant->close();
     
     // ✅ Auto-add to contacts table
-    $add_contact = $conn->prepare("INSERT IGNORE INTO contacts (user_id, contact_user_id) VALUES (?, ?)");
-    $add_contact->bind_param("ii", $current_user_id, $contact_id);
+    $add_contact = $conn->prepare("INSERT IGNORE INTO contacts (user_id, contact_user_id) VALUES (?, ?), (?, ?)");
+    $add_contact->bind_param("iiii", $current_user_id, $contact_id, $contact_id, $current_user_id);
     $add_contact->execute();
     $add_contact->close();
 }
 $conv_stmt->close();
 
 // ✅ FIXED: Mark messages as read (using message_reads table)
+// This marks all messages FROM the contact TO the current user as read
 $mark_read = $conn->prepare("
-    INSERT IGNORE INTO message_reads (message_id, user_id)
-    SELECT m.id, ?
+    INSERT IGNORE INTO message_reads (message_id, user_id, read_at)
+    SELECT m.id, ?, NOW()
     FROM messages m
     WHERE m.conversation_id = ?
       AND m.sender_id = ?
@@ -104,7 +107,7 @@ $mark_read->bind_param("iiii", $current_user_id, $conversation_id, $contact_id, 
 $mark_read->execute();
 $mark_read->close();
 
-// ✅ FIXED: Fetch messages from messages table
+// ✅ FIXED: Fetch messages with read status (including is_deleted check)
 $messages_sql = "
     SELECT 
         m.id,
@@ -113,17 +116,82 @@ $messages_sql = "
         m.message_type,
         m.message_text,
         m.attachment_path,
+        m.reply_to_id,
         m.is_edited,
+        m.is_deleted,
         m.created_at,
+        m.updated_at,
+        EXISTS(
+            SELECT 1 FROM message_reads mr 
+            WHERE mr.message_id = m.id 
+            AND mr.user_id = ?
+        ) AS is_read,
         (SELECT COUNT(*) FROM message_reads mr WHERE mr.message_id = m.id) AS read_count
     FROM messages m
     WHERE m.conversation_id = ?
-      AND m.is_deleted = 0
     ORDER BY m.created_at ASC
 ";
 
 $messages_stmt = $conn->prepare($messages_sql);
-$messages_stmt->bind_param("i", $conversation_id);
+$messages_stmt->bind_param("ii", $contact_id, $conversation_id);
 $messages_stmt->execute();
 $messages_result = $messages_stmt->get_result();
+
+// Build array of messages with read status
+$messages_array = [];
+while ($row = $messages_result->fetch_assoc()) {
+    // Add read_at for tick display logic
+    $row['read_at'] = $row['is_read'] ? date('Y-m-d H:i:s') : null;
+    $messages_array[] = $row;
+}
+$messages_stmt->close();
+
+// Convert to object-like result for backward compatibility
+// This creates a mock result object that works with fetch_assoc()
+class ArrayResult {
+    private $data;
+    private $position = 0;
+    public $num_rows;
+    
+    public function __construct($data) {
+        $this->data = $data;
+        $this->num_rows = count($data);
+    }
+    
+    public function fetch_assoc() {
+        if ($this->position < count($this->data)) {
+            return $this->data[$this->position++];
+        }
+        return null;
+    }
+    
+    public function fetch_all() {
+        return $this->data;
+    }
+    
+    public function close() {
+        $this->data = [];
+        $this->position = 0;
+    }
+}
+
+$messages_result = new ArrayResult($messages_array);
+
+// ✅ Get conversation unread count for the current user (for badge updates)
+$unread_count_query = "
+    SELECT COUNT(*) as unread
+    FROM messages m
+    WHERE m.conversation_id = ?
+    AND m.sender_id != ?
+    AND m.is_deleted = 0
+    AND m.id NOT IN (
+        SELECT message_id FROM message_reads WHERE user_id = ?
+    )
+";
+$unread_stmt = $conn->prepare($unread_count_query);
+$unread_stmt->bind_param("iii", $conversation_id, $current_user_id, $current_user_id);
+$unread_stmt->execute();
+$unread_result = $unread_stmt->get_result()->fetch_assoc();
+$unread_count = $unread_result['unread'];
+$unread_stmt->close();
 ?>

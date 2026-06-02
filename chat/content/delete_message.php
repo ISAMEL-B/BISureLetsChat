@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 
 // Set JSON content type for all responses
 header('Content-Type: application/json');
@@ -34,7 +34,7 @@ try {
         throw new Exception("Invalid message ID");
     }
 
-    // Check if message exists and belongs to current user
+    // Check if message exists and user has permission
     $check_query = "
         SELECT 
             m.id, 
@@ -44,27 +44,16 @@ try {
             m.message_type,
             m.conversation_id,
             c.conversation_type,
-            cp.role
+            gm.role as group_role
         FROM messages m
         JOIN conversations c ON m.conversation_id = c.id
-        LEFT JOIN group_members gm ON (
+        LEFT JOIN groups_chat gc ON (
             c.conversation_type = 'group' 
-            AND c.id IN (
-                SELECT conversation_id 
-                FROM groups_chat 
-                WHERE conversation_id = c.id
-            )
-            AND gm.group_id = (
-                SELECT id 
-                FROM groups_chat 
-                WHERE conversation_id = c.id
-            )
-            AND gm.user_id = ?
+            AND gc.conversation_id = c.id
         )
-        LEFT JOIN conversation_participants cp ON (
-            c.conversation_type = 'private' 
-            AND cp.conversation_id = c.id 
-            AND cp.user_id = ?
+        LEFT JOIN group_members gm ON (
+            gc.id = gm.group_id 
+            AND gm.user_id = ?
         )
         WHERE m.id = ?
     ";
@@ -75,7 +64,7 @@ try {
     }
     
     $user_id = $_SESSION['user_id'];
-    $check_stmt->bind_param("iii", $user_id, $user_id, $message_id);
+    $check_stmt->bind_param("ii", $user_id, $message_id);
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
 
@@ -93,6 +82,7 @@ try {
     // Verify permissions:
     // 1. Message owner can always delete their messages
     // 2. Group admins can delete any message in their groups
+    // 3. For private chats, participants need to be verified
     $can_delete = false;
     $delete_type = 'soft'; // Default to soft delete
     
@@ -102,22 +92,40 @@ try {
         if ($permanent_delete) {
             $delete_type = 'permanent';
         }
-    } elseif ($message_data['conversation_type'] === 'group' && $message_data['role'] === 'admin') {
+    } elseif ($message_data['conversation_type'] === 'group' && $message_data['group_role'] === 'admin') {
         // Group admin
         $can_delete = true;
         $delete_type = 'permanent'; // Admins can permanently delete
+    } elseif ($message_data['conversation_type'] === 'private') {
+        // For private chats, check if user is a participant
+        $participant_check = "
+            SELECT 1 FROM conversation_participants 
+            WHERE conversation_id = ? AND user_id = ?
+        ";
+        $participant_stmt = $conn->prepare($participant_check);
+        $participant_stmt->bind_param("ii", $message_data['conversation_id'], $user_id);
+        $participant_stmt->execute();
+        $participant_result = $participant_stmt->get_result();
+        
+        if ($participant_result->num_rows === 0) {
+            throw new Exception("You are not a participant in this conversation");
+        }
+        $participant_stmt->close();
+    } else {
+        throw new Exception("You don't have permission to delete this message");
     }
     
-    if (!$can_delete) {
+    if (!$can_delete && $message_data['sender_id'] != $user_id) {
         throw new Exception("You don't have permission to delete this message");
     }
 
     // Handle file deletion if attachment exists and permanent delete is requested
     if ($delete_type === 'permanent' && !empty($message_data['attachment_path'])) {
-        if (file_exists($message_data['attachment_path'])) {
-            if (!unlink($message_data['attachment_path'])) {
+        $file_path = __DIR__ . '/../' . $message_data['attachment_path'];
+        if (file_exists($file_path)) {
+            if (!unlink($file_path)) {
                 // Log error but continue with deletion
-                error_log("Failed to delete file: " . $message_data['attachment_path']);
+                error_log("Failed to delete file: " . $file_path);
             }
         }
     }
@@ -127,20 +135,14 @@ try {
     
     if ($delete_type === 'permanent') {
         // Permanent delete - remove from database
-        $delete_query = "DELETE FROM messages WHERE id = ? AND (sender_id = ? OR EXISTS (
-            SELECT 1 FROM groups_chat gc
-            JOIN conversations c ON gc.conversation_id = c.id
-            JOIN group_members gm ON gc.id = gm.group_id
-            WHERE c.id = (SELECT conversation_id FROM messages WHERE id = ?)
-            AND gm.user_id = ? AND gm.role = 'admin'
-        ))";
+        $delete_query = "DELETE FROM messages WHERE id = ?";
         
         $delete_stmt = $conn->prepare($delete_query);
         if (!$delete_stmt) {
             throw new Exception("Database error: " . $conn->error);
         }
         
-        $delete_stmt->bind_param("iiii", $message_id, $user_id, $message_id, $user_id);
+        $delete_stmt->bind_param("i", $message_id);
         $delete_stmt->execute();
         
         if ($delete_stmt->affected_rows === 0) {

@@ -681,27 +681,6 @@ $result = $stmt->get_result();
 <div id="clToastContainer"></div>
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-
-
-
-    // Check for pending call (from another page)
-    <?php if (isset($_SESSION['pending_call'])): ?>
-        const pendingCall = <?= json_encode($_SESSION['pending_call']) ?>;
-        // Auto-accept the call
-        window.addEventListener('load', () => {
-            state.remoteId = pendingCall.from;
-            state.remoteName = pendingCall.fromName;
-            state.remotePicture = pendingCall.fromPicture;
-            state.isVideo = pendingCall.isVideo;
-            state.pendingOffer = null; // Will be re-negotiated
-            state.dbCallId = pendingCall.callId;
-            
-            acceptCall();
-        });
-        <?php unset($_SESSION['pending_call']); ?>
-    <?php endif; ?>
-
-
     <script>
         // ✅ User info from PHP session
         window.SELF_ID = <?= json_encode($current_user_id); ?>;

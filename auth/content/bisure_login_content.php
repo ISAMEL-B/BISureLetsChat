@@ -43,7 +43,7 @@ try {
     // Query matching your schema
     $stmt = $conn->prepare(
         "SELECT id, uuid, fullname, username, email, phone, 
-                password_hash, profile_photo, is_verified 
+                password_hash, profile_photo, role, is_verified 
          FROM users 
          WHERE username = ? OR email = ? OR phone = ? 
          LIMIT 1"
@@ -63,7 +63,7 @@ try {
             $_SESSION['phone']         = $row['phone'];
             $_SESSION['profile_photo'] = $row['profile_photo'];
             $_SESSION['is_verified']   = $row['is_verified'];
-
+            $_SESSION['user_role']     = $row['role'];
             // Update online status
             $update = $conn->prepare("UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?");
             $update->bind_param("i", $row['id']);

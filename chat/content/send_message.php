@@ -2,7 +2,7 @@
 date_default_timezone_set('Africa/Kampala');
 
 session_start();
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 
 // Set the content type to JSON
 header('Content-Type: application/json');
@@ -29,6 +29,11 @@ try {
             throw new Exception("Receiver ID is missing.");
         }
 
+        // Prevent sending to self
+        if ($receiver_id == $user_id) {
+            throw new Exception("Cannot send message to yourself.");
+        }
+
         // Validate that receiver exists
         $user_check_query = "SELECT id FROM users WHERE id = ?";
         $user_check_stmt = mysqli_prepare($conn, $user_check_query);
@@ -40,6 +45,21 @@ try {
             throw new Exception("Receiver does not exist.");
         }
         mysqli_stmt_close($user_check_stmt);
+
+        // Validate reply_to_id if provided
+        if ($reply_to_id) {
+            $reply_check_query = "SELECT id FROM messages WHERE id = ? AND is_deleted = 0";
+            $reply_check_stmt = mysqli_prepare($conn, $reply_check_query);
+            mysqli_stmt_bind_param($reply_check_stmt, 'i', $reply_to_id);
+            mysqli_stmt_execute($reply_check_stmt);
+            $reply_check_result = mysqli_stmt_get_result($reply_check_stmt);
+            
+            if (mysqli_num_rows($reply_check_result) === 0) {
+                // Reply message doesn't exist or was deleted, ignore reply_to_id
+                $reply_to_id = null;
+            }
+            mysqli_stmt_close($reply_check_stmt);
+        }
 
         // Initialize file variables
         $attachment_path = null;
@@ -72,27 +92,34 @@ try {
                 'image/jpeg',
                 'image/png',
                 'image/gif',
+                'image/webp',
                 'audio/mpeg',
                 'audio/wav',
+                'audio/ogg',
                 'application/pdf',
                 'video/mp4',
                 'video/x-msvideo',
                 'video/x-matroska',
                 'video/ogg',
-                'video/webm'
+                'video/webm',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'text/plain'
             ];
 
             // Check file type and size
             if (!in_array($file_type, $allowed_file_types)) {
-                throw new Exception("Invalid file type. Only JPG, PNG, GIF, MP3, WAV, PDF, MP4, AVI, MKV, OGG, and WebM files are allowed.");
+                throw new Exception("Invalid file type. Allowed types: JPG, PNG, GIF, WebP, MP3, WAV, OGG, PDF, MP4, AVI, MKV, WebM, DOC, DOCX, XLS, XLSX, TXT");
             }
 
-            if ($file_size > 2 * 1024 * 1024) { // Limit file size to 2MB
-                throw new Exception("File size exceeds the limit of 2MB.");
+            if ($file_size > 50 * 1024 * 1024) { // Limit file size to 50MB
+                throw new Exception("File size exceeds the limit of 50MB.");
             }
 
             // Create upload directory if it doesn't exist
-            $upload_dir = 'uploads/';
+            $upload_dir = __DIR__ . '/../uploads/chat_files/';
             if (!is_dir($upload_dir)) {
                 if (!mkdir($upload_dir, 0755, true)) {
                     throw new Exception("Failed to create upload directory.");
@@ -100,11 +127,13 @@ try {
             }
 
             // Handle file name collision
-            $file_name = time() . '_' . preg_replace('/[^a-zA-Z0-9\.\-_]/', '', basename($file_name));
-            $attachment_path = $upload_dir . $file_name;
+            $file_extension = pathinfo($file_name, PATHINFO_EXTENSION);
+            $unique_name = time() . '_' . uniqid() . '_' . preg_replace('/[^a-zA-Z0-9\.\-_]/', '', basename($file_name));
+            $attachment_path = 'uploads/chat_files/' . $unique_name;
+            $full_path = __DIR__ . '/../' . $attachment_path;
 
             // Move the uploaded file
-            if (!move_uploaded_file($file_tmp_path, $attachment_path)) {
+            if (!move_uploaded_file($file_tmp_path, $full_path)) {
                 throw new Exception("Failed to upload file.");
             }
         }
@@ -164,12 +193,12 @@ try {
             }
             mysqli_stmt_close($conv_stmt);
 
-            // Insert the message
-            $message_query = "INSERT INTO messages (conversation_id, sender_id, message_type, message_text, attachment_path) 
-                             VALUES (?, ?, ?, ?, ?)";
+            // Insert the message WITH reply_to_id
+            $message_query = "INSERT INTO messages (conversation_id, sender_id, message_type, message_text, attachment_path, reply_to_id) 
+                             VALUES (?, ?, ?, ?, ?, ?)";
             
             $message_stmt = mysqli_prepare($conn, $message_query);
-            mysqli_stmt_bind_param($message_stmt, 'iisss', $conversation_id, $user_id, $message_type, $message_text, $attachment_path);
+            mysqli_stmt_bind_param($message_stmt, 'iisssi', $conversation_id, $user_id, $message_type, $message_text, $attachment_path, $reply_to_id);
             
             if (!mysqli_stmt_execute($message_stmt)) {
                 throw new Exception("Failed to send the message: " . mysqli_stmt_error($message_stmt));
@@ -178,7 +207,7 @@ try {
             $message_id = mysqli_insert_id($conn);
             mysqli_stmt_close($message_stmt);
 
-            // Fetch the newly inserted message with user details
+            // Fetch the newly inserted message with user details and reply info
             $select_query = "
                 SELECT 
                     m.id,
@@ -187,6 +216,7 @@ try {
                     m.message_type,
                     m.message_text,
                     m.attachment_path,
+                    m.reply_to_id,
                     m.is_edited,
                     m.is_deleted,
                     m.created_at,
@@ -209,22 +239,24 @@ try {
                 // Format the time
                 $new_message['formatted_time'] = date('h:i A | M d', strtotime($new_message['created_at']));
 
-                // If this is a reply, add reply information
-                if ($reply_to_id) {
+                // If this is a reply, fetch reply details
+                if ($new_message['reply_to_id']) {
                     $reply_query = "
                         SELECT 
                             m.id,
                             m.message_text,
                             m.message_type,
                             m.attachment_path,
-                            u.fullname as reply_to_name
+                            m.is_deleted,
+                            u.fullname as reply_to_name,
+                            u.username as reply_to_username
                         FROM messages m
                         JOIN users u ON m.sender_id = u.id
                         WHERE m.id = ?
                     ";
                     
                     $reply_stmt = mysqli_prepare($conn, $reply_query);
-                    mysqli_stmt_bind_param($reply_stmt, 'i', $reply_to_id);
+                    mysqli_stmt_bind_param($reply_stmt, 'i', $new_message['reply_to_id']);
                     mysqli_stmt_execute($reply_stmt);
                     $reply_result = mysqli_stmt_get_result($reply_stmt);
                     

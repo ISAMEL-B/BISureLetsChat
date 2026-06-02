@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 
 // Set JSON content type for all responses
 header('Content-Type: application/json');

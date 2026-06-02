@@ -1,7 +1,7 @@
 <?php
 /**
  * BUSure Chat - Groups Page
- * ✅ Fixed parameter count
+ * ✅ Added: Group avatar preview with smooth animation
  */
 
 // Set timezone
@@ -22,7 +22,9 @@ $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';
 // Get current user ID
 $current_user_id = $_SESSION['user_id'];
 
-// ✅ FIXED: Correct number of placeholders (3)
+// Group photos path
+$group_photos_path = '../settings/uploads/groups/';
+
 $stmt = $conn->prepare("
     SELECT 
         g.id AS group_id,
@@ -32,7 +34,6 @@ $stmt = $conn->prepare("
         g.created_at,
         g.created_by,
         COUNT(gm.user_id) as member_count,
-        -- Last message in this group's conversation
         (
             SELECT m.message_text
             FROM messages m
@@ -41,7 +42,6 @@ $stmt = $conn->prepare("
             ORDER BY m.created_at DESC
             LIMIT 1
         ) as last_message,
-        -- Last message time
         (
             SELECT m.created_at
             FROM messages m
@@ -50,31 +50,29 @@ $stmt = $conn->prepare("
             ORDER BY m.created_at DESC
             LIMIT 1
         ) as last_message_time,
-        -- Unread count for current user
         (
             SELECT COUNT(*)
             FROM messages m
             WHERE m.conversation_id = g.conversation_id
               AND m.is_deleted = 0
-              AND m.sender_id != ?                              -- Placeholder 1
+              AND m.sender_id != ?
               AND m.id NOT IN (
                   SELECT mr.message_id
                   FROM message_reads mr
-                  WHERE mr.user_id = ?                           -- Placeholder 2
+                  WHERE mr.user_id = ?
               )
         ) as unread_count
     FROM groups_chat g
     JOIN group_members gm ON g.id = gm.group_id
-    WHERE gm.user_id = ?                                         -- Placeholder 3
+    WHERE gm.user_id = ?
     GROUP BY g.id
     ORDER BY last_message_time DESC, g.created_at DESC
 ");
 
-// ✅ FIXED: 3 params, not 4
 $stmt->bind_param("iii", 
-    $current_user_id,  // Placeholder 1: m.sender_id != ?
-    $current_user_id,  // Placeholder 2: mr.user_id = ?
-    $current_user_id   // Placeholder 3: gm.user_id = ?
+    $current_user_id,
+    $current_user_id,
+    $current_user_id
 );
 
 $stmt->execute();
@@ -98,16 +96,22 @@ $stmt->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- ✅ FIXED: Updated CSS path -->
-    <link href="css/my_groups.css" rel="stylesheet">
 
     <style>
-        /* Quick inline styles in case CSS file is missing */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
         .main-wrapper {
             max-width: 700px;
             margin: 0 auto;
             min-height: 100vh;
             background: #e5ddd5;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
@@ -119,19 +123,14 @@ $stmt->close();
             color: white;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 100;
+            flex-shrink: 0;
         }
 
         .header-left {
             display: flex;
             align-items: center;
             gap: 1rem;
-        }
-
-        .back-button {
-            color: white;
-            text-decoration: none;
-            font-size: 1.2rem;
         }
 
         .header-title {
@@ -175,6 +174,7 @@ $stmt->close();
             padding: 1rem;
             background: white;
             border-bottom: 1px solid #e0e0e0;
+            flex-shrink: 0;
         }
 
         .input-group {
@@ -195,7 +195,6 @@ $stmt->close();
             border: 1px solid #ddd;
             border-radius: 25px;
             font-size: 0.95rem;
-            font-family: 'Roboto', sans-serif;
         }
 
         .input-group input:focus {
@@ -205,13 +204,18 @@ $stmt->close();
 
         .groups-container {
             background: white;
-            min-height: 50vh;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
         .groups-list {
             list-style: none;
             padding: 0;
             margin: 0;
+            flex: 1;
+            overflow-y: auto;
         }
 
         .group-item {
@@ -242,6 +246,13 @@ $stmt->close();
             font-size: 1.3rem;
             flex-shrink: 0;
             overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .group-avatar:hover {
+            transform: scale(1.05);
         }
 
         .group-avatar img {
@@ -307,6 +318,12 @@ $stmt->close();
             text-align: center;
             padding: 3rem 2rem;
             color: #888;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
         }
 
         .empty-state i {
@@ -362,6 +379,94 @@ $stmt->close();
         .new-group-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+        }
+
+        /* Image Preview Modal */
+        .image-preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .preview-container {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            animation: zoomIn 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .preview-image {
+            width: auto;
+            max-width: 80vw;
+            max-height: 70vh;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .preview-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(5px);
+        }
+
+        .preview-close:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: rotate(90deg);
+        }
+
+        .preview-caption {
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out 0.1s both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Dark Mode */
@@ -426,6 +531,19 @@ $stmt->close();
                 height: 44px;
                 font-size: 1.1rem;
             }
+
+            .preview-image {
+                max-width: 90vw;
+                max-height: 60vh;
+            }
+
+            .preview-close {
+                top: -45px;
+                right: -5px;
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -440,6 +558,16 @@ $stmt->close();
                 width: 48px;
                 height: 48px;
             }
+
+            .preview-image {
+                max-width: 95vw;
+                max-height: 50vh;
+            }
+
+            .preview-caption {
+                font-size: 0.9rem;
+                margin-top: 15px;
+            }
         }
     </style>
 </head>
@@ -447,17 +575,12 @@ $stmt->close();
 <body class="<?= $darkMode ? 'dark-mode' : 'light-mode' ?>">
     <div class="main-wrapper">
         <header>
-            <!-- ✅ FIXED: Updated hamburger include path -->
             <?php 
-            if (file_exists(__DIR__ . '/cd_hamburger.php')) {
-                require_once __DIR__ . '/cd_hamburger.php';
+            if (file_exists(__DIR__ . '/../includes/cd_hamburger.php')) {
+                require_once __DIR__ . '/../includes/cd_hamburger.php';
             }
             ?>
             <div class="header-left">
-                <!-- ✅ FIXED: Updated back button link -->
-                <a href="#" onclick="history.back(); return false;" class="back-button">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
                 <h1 class="header-title">Groups <span class="pro-badge">PRO</span></h1>
             </div>
             <div class="header-actions">
@@ -478,17 +601,17 @@ $stmt->close();
             <ul class="groups-list" id="groupsList">
                 <?php if (!empty($groups)): ?>
                     <?php foreach ($groups as $group): ?>
-                        <!-- ✅ FIXED: Uses 'id' instead of 'group_id' -->
-                        <li class="group-item" data-id="<?= $group['group_id'] ?>" onclick="openGroup(<?= $group['group_id'] ?>)">
-                            <div class="group-avatar">
-                                <!-- ✅ FIXED: Uses group_photo with correct path -->
+                        <li class="group-item" data-id="<?= $group['group_id'] ?>">
+                            <div class="group-avatar" onclick="event.stopPropagation(); previewGroupImage('<?= $group['group_id'] ?>', '<?= htmlspecialchars($group['group_name']) ?>', '<?= !empty($group['group_photo']) ? $group_photos_path . $group['group_photo'] : '' ?>')">
                                 <?php if (!empty($group['group_photo'])): ?>
-                                    <img src="<?= htmlspecialchars('../../uploads/images/' . $group['group_photo']) ?>" alt="Group image">
+                                    <img src="<?= htmlspecialchars($group_photos_path . $group['group_photo']) ?>?v=<?= time() ?>" 
+                                         alt="Group image"
+                                         onerror="this.style.display='none'; this.parentElement.innerHTML='<?= strtoupper(substr($group['group_name'], 0, 1)) ?>'">
                                 <?php else: ?>
                                     <?= strtoupper(substr($group['group_name'], 0, 1)) ?>
                                 <?php endif; ?>
                             </div>
-                            <div class="group-info">
+                            <div class="group-info" onclick="openGroup(<?= $group['group_id'] ?>)">
                                 <div class="group-name"><?= htmlspecialchars($group['group_name']) ?></div>
                                 <div class="group-meta">
                                     <span class="group-members"><?= $group['member_count'] ?> members</span>
@@ -498,7 +621,6 @@ $stmt->close();
                                         • <span>No messages yet</span>
                                     <?php endif; ?>
                                 </div>
-                                <!-- ✅ FIXED: Show time + unread badge -->
                             </div>
                             <?php if (!empty($group['last_message_time'])): ?>
                                 <div class="group-time">
@@ -527,36 +649,109 @@ $stmt->close();
             <i class="fas fa-plus"></i>
         </div>
 
-        <!-- ✅ FIXED: Updated navbar include path -->
+        <!-- Image Preview Modal -->
+        <div id="imagePreviewModal" class="image-preview-modal">
+            <div class="preview-container">
+                <button class="preview-close" onclick="closeImagePreview()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <img id="previewImage" class="preview-image" src="" alt="Group preview">
+                <div id="previewCaption" class="preview-caption"></div>
+            </div>
+        </div>
+
         <?php include __DIR__ . '/../includes/navbar.php'; ?>
     </div>
 
     <script>
+        let currentImageUrl = '';
+
+        function openGroup(groupId) {
+            window.location.href = `group_chat?group_id=${groupId}`;
+        }
+
+        function previewGroupImage(groupId, groupName, imageUrl) {
+            event.stopPropagation();
+            
+            const modal = document.getElementById('imagePreviewModal');
+            const previewImage = document.getElementById('previewImage');
+            const previewCaption = document.getElementById('previewCaption');
+            
+            if (imageUrl) {
+                // Add cache busting
+                previewImage.src = imageUrl + '?t=' + Date.now();
+                currentImageUrl = imageUrl;
+            } else {
+                // If no image, show placeholder
+                previewImage.src = '';
+                previewImage.style.background = 'linear-gradient(135deg, #128C7E, #075E54)';
+                previewImage.style.display = 'flex';
+                previewImage.style.alignItems = 'center';
+                previewImage.style.justifyContent = 'center';
+                previewImage.style.fontSize = '4rem';
+                previewImage.style.fontWeight = 'bold';
+                previewImage.style.color = 'white';
+                
+                // Set text content as fallback
+                const firstLetter = groupName.charAt(0).toUpperCase();
+                // We'll handle this differently - actually show a div with the letter
+                previewImage.outerHTML = `<div class="preview-image" style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #128C7E, #075E54); display: flex; align-items: center; justify-content: center; font-size: 5rem; font-weight: bold; color: white;">${firstLetter}</div>`;
+            }
+            
+            previewCaption.textContent = groupName;
+            
+            // Show modal with animation
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            
+            // Close on escape key
+            document.addEventListener('keydown', handleEscapeKey);
+        }
+
+        function closeImagePreview() {
+            const modal = document.getElementById('imagePreviewModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            document.removeEventListener('keydown', handleEscapeKey);
+        }
+
+        function handleEscapeKey(e) {
+            if (e.key === 'Escape') {
+                closeImagePreview();
+            }
+        }
+
+        // Close modal when clicking outside the image
+        document.getElementById('imagePreviewModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImagePreview();
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             const searchBtn = document.getElementById('searchButton');
             const searchBox = document.getElementById('searchContainer');
             const searchInput = document.getElementById('searchInput');
 
             // Toggle search box
-            searchBtn.onclick = () => {
-                const visible = searchBox.style.display !== 'none';
-                searchBox.style.display = visible ? 'none' : 'block';
-                if (!visible) searchInput.focus();
-            };
+            if (searchBtn) {
+                searchBtn.onclick = () => {
+                    const visible = searchBox.style.display !== 'none';
+                    searchBox.style.display = visible ? 'none' : 'block';
+                    if (!visible) searchInput.focus();
+                };
+            }
 
             // Search functionality
-            searchInput.oninput = () => {
-                const term = searchInput.value.toLowerCase();
-                document.querySelectorAll('.group-item').forEach(item => {
-                    const name = item.querySelector('.group-name').textContent.toLowerCase();
-                    item.style.display = name.includes(term) ? 'flex' : 'none';
-                });
-            };
-
-            // ✅ FIXED: Updated redirect URL
-            window.openGroup = function(groupId) {
-                window.location.href = `group_chat?group_id=${groupId}`;
-            };
+            if (searchInput) {
+                searchInput.oninput = () => {
+                    const term = searchInput.value.toLowerCase();
+                    document.querySelectorAll('.group-item').forEach(item => {
+                        const name = item.querySelector('.group-name').textContent.toLowerCase();
+                        item.style.display = name.includes(term) ? 'flex' : 'none';
+                    });
+                };
+            }
         });
     </script>
 </body>

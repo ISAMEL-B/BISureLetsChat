@@ -149,114 +149,399 @@ $stmt->close();
             padding-bottom: var(--nav-height);
         }
 
+        /* =============================================
+           HEADER WITH SIDEBAR TOGGLE ON LEFT
+           ============================================= */
         .ch-header {
             background: linear-gradient(135deg, var(--ch-primary-dark), var(--ch-primary));
-            padding: 1.2rem 1.5rem; color: white;
-            display: flex; align-items: center; justify-content: center;
-            position: relative; min-height: 60px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.2rem 1.5rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 60px;
         }
-        .ch-header-title { font-size: 1.35rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .ch-pro-badge { background: #FFD700; color: #000; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; font-weight: 700; }
-        .ch-header-actions { position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); }
-        .ch-header-btn {
-            background: rgba(255,255,255,0.2); border: none; color: white;
-            width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.95rem; transition: var(--ch-transition);
-        }
-        .ch-header-btn:hover { background: rgba(255,255,255,0.3); }
 
+        /* Sidebar toggle - positioned on the LEFT */
+        .ch-sidebar-toggle {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            z-index: 2;
+            color: inherit;
+        }
+
+        /* Header title - centered */
+        .ch-header-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+            text-align: center;
+            margin-left: -48px;
+        }
+
+        .ch-pro-badge {
+            background: #FFD700;
+            color: #000;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Right spacer for balance */
+        .ch-header-spacer {
+            flex-shrink: 0;
+            width: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Options button in right spacer */
+        .ch-header-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            transition: var(--ch-transition);
+        }
+        .ch-header-btn:hover { background: rgba(255,255,255,0.35); }
+
+        /* =============================================
+           FILTERS
+           ============================================= */
         .ch-filters {
-            display: flex; gap: 8px; padding: 1rem; background: var(--ch-card);
-            border-bottom: 1px solid var(--ch-border); overflow-x: auto;
-            -webkit-overflow-scrolling: touch; transition: background 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            gap: 8px;
+            padding: 1rem;
+            background: var(--ch-card);
+            border-bottom: 1px solid var(--ch-border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
         .ch-filters::-webkit-scrollbar { height: 0; }
         .ch-filter-btn {
-            padding: 8px 16px; border-radius: 20px; border: 1px solid var(--ch-border);
-            background: var(--ch-card); color: var(--ch-text-secondary);
-            font-size: 0.85rem; font-weight: 500; cursor: pointer; white-space: nowrap;
-            font-family: 'Poppins', sans-serif; transition: var(--ch-transition);
-            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--ch-border);
+            background: var(--ch-card);
+            color: var(--ch-text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: 'Poppins', sans-serif;
+            transition: var(--ch-transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .ch-filter-btn:hover { background: var(--ch-filter-hover); border-color: var(--ch-primary); }
+        .ch-filter-btn:hover {
+            background: var(--ch-filter-hover);
+            border-color: var(--ch-primary);
+        }
         .ch-filter-btn.ch-active {
-            background: var(--ch-filter-active-bg); border-color: var(--ch-primary);
-            color: var(--ch-filter-active-text); font-weight: 600;
+            background: var(--ch-filter-active-bg);
+            border-color: var(--ch-primary);
+            color: var(--ch-filter-active-text);
+            font-weight: 600;
         }
 
+        /* =============================================
+           SEARCH
+           ============================================= */
         .ch-search-wrap {
-            padding: 0.75rem 1rem; background: var(--ch-card);
-            border-bottom: 1px solid var(--ch-border); transition: background 0.3s ease, border-color 0.3s ease;
+            padding: 0.75rem 1rem;
+            background: var(--ch-card);
+            border-bottom: 1px solid var(--ch-border);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
         .ch-search-inner { position: relative; }
-        .ch-search-inner i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ch-text-secondary); font-size: 0.9rem; }
-        .ch-search-inner input {
-            width: 100%; padding: 10px 14px 10px 38px; border: 1px solid var(--ch-border);
-            border-radius: 24px; font-size: 0.9rem; outline: none; background: var(--ch-input-bg);
-            color: var(--ch-text); font-family: 'Poppins', sans-serif; transition: var(--ch-transition);
+        .ch-search-inner i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ch-text-secondary);
+            font-size: 0.9rem;
         }
-        .ch-search-inner input:focus { border-color: var(--ch-primary); box-shadow: 0 0 0 3px rgba(18, 140, 126, 0.1); }
+        .ch-search-inner input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border: 1px solid var(--ch-border);
+            border-radius: 24px;
+            font-size: 0.9rem;
+            outline: none;
+            background: var(--ch-input-bg);
+            color: var(--ch-text);
+            font-family: 'Poppins', sans-serif;
+            transition: var(--ch-transition);
+        }
+        .ch-search-inner input:focus {
+            border-color: var(--ch-primary);
+            box-shadow: 0 0 0 3px rgba(18, 140, 126, 0.1);
+        }
         .ch-search-inner input::placeholder { color: #a0a0a0; }
 
+        /* =============================================
+           CALL HISTORY LIST
+           ============================================= */
         .ch-history-list { padding: 0.25rem 0; }
         .ch-history-item {
-            display: flex; align-items: center; padding: 0.85rem 1rem; gap: 12px;
-            cursor: pointer; transition: var(--ch-transition); border-bottom: 1px solid var(--ch-border);
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            gap: 12px;
+            cursor: pointer;
+            transition: var(--ch-transition);
+            border-bottom: 1px solid var(--ch-border);
         }
         .ch-history-item:hover { background: var(--ch-hover); }
         .ch-history-item:active { transform: scale(0.99); }
 
         .ch-call-icon {
-            width: 42px; height: 42px; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
         }
         .ch-call-icon.ch-incoming { background: rgba(37, 211, 102, 0.12); color: var(--ch-incoming); }
         .ch-call-icon.ch-outgoing { background: rgba(52, 183, 241, 0.12); color: var(--ch-outgoing); }
         .ch-call-icon.ch-missed { background: rgba(231, 76, 60, 0.12); color: var(--ch-missed); }
 
         .ch-history-details { flex: 1; min-width: 0; }
-        .ch-contact-name { font-weight: 600; font-size: 0.95rem; color: var(--ch-text); margin-bottom: 2px; }
-        .ch-call-info { font-size: 0.78rem; color: var(--ch-text-secondary); display: flex; align-items: center; gap: 4px; }
-        .ch-call-duration { font-size: 0.85rem; font-weight: 500; color: var(--ch-text-secondary); flex-shrink: 0; }
+        .ch-contact-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--ch-text);
+            margin-bottom: 2px;
+        }
+        .ch-call-info {
+            font-size: 0.78rem;
+            color: var(--ch-text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .ch-call-duration {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--ch-text-secondary);
+            flex-shrink: 0;
+        }
 
+        /* =============================================
+           LOAD MORE
+           ============================================= */
         .ch-load-more { text-align: center; padding: 1.5rem; }
         .ch-load-btn {
-            padding: 10px 24px; border-radius: 24px; border: 1px solid var(--ch-primary);
-            background: transparent; color: var(--ch-primary); font-weight: 500;
-            font-size: 0.9rem; cursor: pointer; font-family: 'Poppins', sans-serif; transition: var(--ch-transition);
+            padding: 10px 24px;
+            border-radius: 24px;
+            border: 1px solid var(--ch-primary);
+            background: transparent;
+            color: var(--ch-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: var(--ch-transition);
         }
         .ch-load-btn:hover { background: var(--ch-primary); color: white; }
 
-        .ch-empty { text-align: center; padding: 3rem 1.5rem; color: var(--ch-text-secondary); }
+        /* =============================================
+           EMPTY STATE
+           ============================================= */
+        .ch-empty {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--ch-text-secondary);
+        }
         .ch-empty i { font-size: 4rem; margin-bottom: 1rem; opacity: 0.3; }
         .ch-empty h3 { font-weight: 600; margin-bottom: 0.5rem; color: var(--ch-text); }
 
-        /* DARK MODE */
+        /* =============================================
+           DARK MODE
+           ============================================= */
         body.dark-mode {
-            --ch-bg: #0B141A; --ch-card: #1F2C33; --ch-text: #E9EDEF;
-            --ch-text-secondary: #8696A0; --ch-border: #2A3942;
-            --ch-hover: rgba(255, 255, 255, 0.04); --ch-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            --ch-bg: #0B141A;
+            --ch-card: #1F2C33;
+            --ch-text: #E9EDEF;
+            --ch-text-secondary: #8696A0;
+            --ch-border: #2A3942;
+            --ch-hover: rgba(255, 255, 255, 0.04);
+            --ch-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             --ch-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
-            --ch-filter-active-bg: rgba(37, 211, 102, 0.12); --ch-filter-active-text: #25D366;
-            --ch-filter-hover: rgba(37, 211, 102, 0.06); --ch-input-bg: #2A3942; background: var(--ch-bg);
+            --ch-filter-active-bg: rgba(37, 211, 102, 0.12);
+            --ch-filter-active-text: #25D366;
+            --ch-filter-hover: rgba(37, 211, 102, 0.06);
+            --ch-input-bg: #2A3942;
+            background: var(--ch-bg);
         }
+        body.dark-mode .ch-wrapper { background-color: #1F2C33; }
         body.dark-mode .ch-search-inner input { background: var(--ch-input-bg); border-color: #374248; color: var(--ch-text); }
         body.dark-mode .ch-search-inner input::placeholder { color: var(--ch-text-secondary); }
+        body.dark-mode .ch-search-inner input:focus { border-color: #25D366; }
         body.dark-mode .ch-call-icon.ch-incoming { background: rgba(37, 211, 102, 0.18); }
         body.dark-mode .ch-call-icon.ch-outgoing { background: rgba(52, 183, 241, 0.18); }
         body.dark-mode .ch-call-icon.ch-missed { background: rgba(231, 76, 60, 0.18); }
         body.dark-mode .ch-load-btn { border-color: var(--ch-secondary); color: var(--ch-secondary); }
         body.dark-mode .ch-load-btn:hover { background: var(--ch-secondary); color: white; }
+        body.dark-mode .ch-filter-btn { background: #1F2C33; border-color: #2A3942; color: #8696A0; }
+        body.dark-mode .ch-filter-btn:hover { background: #2A3942; border-color: #25D366; }
+        body.dark-mode .ch-filter-btn.ch-active { background: rgba(37, 211, 102, 0.12); border-color: #25D366; color: #25D366; }
+        body.dark-mode .ch-history-item { border-bottom-color: #2A3942; }
+        body.dark-mode .ch-search-wrap { border-bottom-color: #2A3942; }
+        body.dark-mode .ch-filters { border-bottom-color: #2A3942; }
 
+        /* =============================================
+           RESPONSIVE
+           ============================================= */
         @media (max-width: 480px) {
-            .ch-header { padding: 1rem 1.25rem; min-height: 54px; }
-            .ch-header-title { font-size: 1.2rem; }
-            .ch-filters { padding: 0.75rem 0.8rem; gap: 6px; }
-            .ch-filter-btn { padding: 6px 12px; font-size: 0.8rem; }
-            .ch-history-item { padding: 0.7rem 0.9rem; gap: 10px; }
-            .ch-call-icon { width: 38px; height: 38px; font-size: 0.8rem; }
-            .ch-contact-name { font-size: 0.9rem; }
+            .ch-header {
+                padding: 0.9rem 1rem;
+                min-height: 54px;
+            }
+            
+            .ch-sidebar-toggle {
+                margin-right: 8px;
+            }
+            
+            .ch-header-title {
+                font-size: 1.15rem;
+                margin-left: -40px;
+            }
+            
+            .ch-header-spacer {
+                width: 40px;
+            }
+            
+            .ch-pro-badge {
+                font-size: 0.65rem;
+                padding: 3px 8px;
+            }
+
+            .ch-filters {
+                padding: 0.75rem 0.8rem;
+                gap: 6px;
+            }
+            
+            .ch-filter-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .ch-search-wrap {
+                padding: 0.6rem 0.8rem;
+            }
+            
+            .ch-history-item {
+                padding: 0.7rem 0.9rem;
+                gap: 10px;
+            }
+            
+            .ch-call-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 0.8rem;
+            }
+            
+            .ch-contact-name {
+                font-size: 0.9rem;
+            }
+            
+            .ch-header-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .ch-header {
+                padding: 0.8rem 0.75rem;
+            }
+            
+            .ch-sidebar-toggle {
+                margin-right: 6px;
+            }
+            
+            .ch-header-title {
+                font-size: 1.05rem;
+                margin-left: -36px;
+            }
+            
+            .ch-header-spacer {
+                width: 36px;
+            }
+            
+            .ch-filter-btn {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+            
+            .ch-history-item {
+                padding: 0.6rem 0.75rem;
+            }
+            
+            .ch-call-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 0.75rem;
+            }
+            
+            .ch-header-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .ch-wrapper {
+                border-radius: 16px;
+                margin: 20px 0;
+                min-height: calc(100vh - 40px);
+            }
+            
+            .ch-header {
+                padding: 1.4rem 2rem;
+            }
+            
+            .ch-header-title {
+                font-size: 1.5rem;
+                margin-left: -56px;
+            }
+            
+            .ch-sidebar-toggle {
+                margin-right: 16px;
+            }
+            
+            .ch-header-spacer {
+                width: 56px;
+            }
         }
     </style>
 </head>
@@ -265,10 +550,20 @@ $stmt->close();
 
 <div class="ch-page">
     <div class="ch-wrapper">
+        <!-- ✅ UPDATED HEADER with sidebar toggle on LEFT -->
         <div class="ch-header">
-            <?php if (file_exists(__DIR__ . '/cd_hamburger.php')) require_once __DIR__ . '/cd_hamburger.php'; ?>
-            <div class="ch-header-title">Call History <span class="ch-pro-badge">PRO</span></div>
-            <div class="ch-header-actions">
+            <!-- Sidebar toggle on LEFT -->
+            <div class="ch-sidebar-toggle">
+                <?php if (file_exists(__DIR__ . '/../includes/cd_hamburger.php')) require_once __DIR__ . '/../includes/cd_hamburger.php'; ?>
+            </div>
+            
+            <!-- Centered title -->
+            <div class="ch-header-title">
+                Call History <span class="ch-pro-badge">PRO</span>
+            </div>
+            
+            <!-- Right spacer with options button -->
+            <div class="ch-header-spacer">
                 <button class="ch-header-btn" title="Options"><i class="fas fa-ellipsis-v"></i></button>
             </div>
         </div>

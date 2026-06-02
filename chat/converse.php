@@ -1,5 +1,5 @@
 <?php
-include 'chat_user_fetch.php';
+require_once __DIR__ . '/content/chat_user_fetch.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
 // Check dark mode preference
@@ -14,7 +14,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Chat with <?php echo htmlspecialchars($contact_name ?? ''); ?> | BisureChat</title>
     <link rel="icon" href="../../favicon.png" type="image/x-icon">
 
@@ -45,6 +45,9 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             --reply-border: #D1D7DB;
             --input-bg: #FFFFFF;
             --hover-light: rgba(0, 0, 0, 0.04);
+            
+            /* Safe area insets for notched phones */
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
@@ -55,11 +58,18 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             -webkit-tap-highlight-color: transparent;
         }
 
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
         body {
             background-color: var(--background-light);
             color: var(--text-dark);
-            height: 100vh;
-            overflow: hidden;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
@@ -68,10 +78,12 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             display: flex;
             justify-content: center;
             height: 100vh;
-            padding: 0 20px;
+            height: 100dvh;
+            padding: 0;
+            position: relative;
         }
 
-        /* Chat container */
+        /* Chat container - FIXED LAYOUT */
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -82,20 +94,26 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             background-color: var(--card-bg);
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s ease;
+            overflow: hidden;
         }
 
-        /* Chat header */
         .chat-header {
             background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
             color: var(--text-light);
-            padding: 12px 20px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
-            position: sticky;
-            top: 0;
+            position: relative;
             z-index: 100;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             gap: 12px;
+            flex-shrink: 0;
+            min-height: 60px;
+        }
+
+        .chat-header > div:first-child {
+            flex-shrink: 0;
+            width: 40px;
         }
 
         .back-button {
@@ -110,6 +128,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             align-items: center;
             flex: 1;
             gap: 12px;
+            min-width: 0;
         }
 
         .chat-avatar {
@@ -118,26 +137,6 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             border-radius: 50%;
             position: relative;
             flex-shrink: 0;
-        }
-
-        .avatar-img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .online-status {
-            position: absolute;
-            bottom: 1px;
-            right: 1px;
-            width: 11px;
-            height: 11px;
-            border-radius: 50%;
-            background-color: var(--secondary-color);
-            border: 2px solid var(--primary-dark);
-            box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.3);
         }
 
         .chat-info {
@@ -161,6 +160,27 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
         .header-actions {
             display: flex;
             gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .online-status {
+            position: absolute;
+            bottom: 1px;
+            right: 1px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            border: 2px solid var(--primary-dark);
+            box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.3);
         }
 
         .header-button {
@@ -182,7 +202,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             background: rgba(255, 255, 255, 0.15);
         }
 
-        /* Messages area */
+        /* Messages area - FLEX GROW to fill available space */
         .messages-container {
             flex: 1;
             overflow-y: auto;
@@ -194,11 +214,13 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             flex-direction: column;
             gap: 3px;
             transition: background-color 0.3s ease;
+            -webkit-overflow-scrolling: touch;
+            min-height: 0;
         }
 
         .message {
             max-width: 65%;
-            padding: 8px 12px;
+            padding: 6px 8px 6px 8px;
             border-radius: 8px;
             position: relative;
             word-wrap: break-word;
@@ -240,6 +262,70 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             gap: 3px;
         }
 
+        /* =============================================
+           WHATSAPP-STYLE REPLY INSIDE MESSAGE BUBBLE
+           ============================================= */
+        .message-reply-preview {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 4px;
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .message-reply-preview:hover {
+            background-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .message-reply-preview .reply-preview-sender {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .message-reply-preview .reply-preview-sender i {
+            font-size: 10px;
+        }
+
+        .message-reply-preview .reply-preview-content {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .message-reply-preview .reply-preview-attachment {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .message-reply-preview .reply-preview-attachment i {
+            font-size: 14px;
+            color: var(--primary-color);
+        }
+
+        /* Reply indicator for deleted messages */
+        .message-reply-preview.deleted-reply {
+            opacity: 0.7;
+            border-left-color: var(--text-secondary);
+        }
+
+        .message-reply-preview.deleted-reply .reply-preview-sender {
+            color: var(--text-secondary);
+        }
+
         /* Ticks */
         .tick {
             margin-left: 3px;
@@ -265,34 +351,6 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
 
         .tick.green-double i:nth-child(2) {
             margin-left: -3px;
-        }
-
-        /* Reply indicator */
-        .reply-indicator {
-            display: flex;
-            align-items: center;
-            background-color: var(--reply-highlight);
-            border-left: 3px solid var(--primary-color);
-            padding: 6px 10px;
-            border-radius: 4px;
-            margin-bottom: 6px;
-            gap: 8px;
-        }
-
-        .reply-sender {
-            font-weight: 600;
-            font-size: 12px;
-            margin-bottom: 1px;
-            color: var(--primary-color);
-        }
-
-        .reply-content {
-            font-size: 12px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 200px;
         }
 
         /* Message attachments */
@@ -393,15 +451,96 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             color: var(--text-secondary);
         }
 
-        /* Input area */
+        /* =============================================
+           INPUT AREA REPLY PREVIEW (ABOVE INPUT FIELD)
+           ============================================= */
+        .input-reply-container {
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .reply-preview-bar {
+            display: none;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            gap: 10px;
+            animation: slideDown 0.2s ease;
+        }
+
+        .reply-preview-bar.show {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-10px);
+                max-height: 0;
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+                max-height: 60px;
+            }
+        }
+
+        .reply-preview-bar .reply-preview-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .reply-preview-bar .reply-preview-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 2px;
+        }
+
+        .reply-preview-bar .reply-preview-message {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .reply-preview-bar .cancel-reply-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .reply-preview-bar .cancel-reply-btn:hover {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+        }
+
+        /* Input area - FIXED AT BOTTOM */
         .input-area {
             background-color: var(--card-bg);
             padding: 10px 16px;
+            padding-bottom: max(10px, var(--safe-area-inset-bottom));
             display: flex;
             align-items: flex-end;
             gap: 8px;
             border-top: 1px solid var(--border-color);
             transition: background-color 0.3s ease, border-color 0.3s ease;
+            flex-shrink: 0;
+            z-index: 50;
+            min-height: 60px;
         }
 
         .input-button {
@@ -430,14 +569,16 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 10px 16px;
-            font-size: 14px;
+            font-size: 16px;
             outline: none;
             resize: none;
             max-height: 120px;
+            min-height: 42px;
             background-color: var(--input-bg);
             color: var(--text-dark);
             font-family: 'Roboto', sans-serif;
             transition: all 0.3s ease;
+            line-height: 1.4;
         }
 
         .message-input:focus {
@@ -463,6 +604,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             transition: all 0.2s;
             flex-shrink: 0;
             box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+            min-width: 44px;
         }
 
         .send-button:hover {
@@ -486,60 +628,11 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             border-top: 1px solid var(--border-color);
             display: none;
             transition: background-color 0.3s ease;
+            flex-shrink: 0;
         }
 
         .file-name-display.show {
             display: block;
-        }
-
-        /* Reply preview */
-        .reply-preview {
-            padding: 8px 16px;
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            display: none;
-            transition: background-color 0.3s ease;
-        }
-
-        .reply-preview.show {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .reply-preview-content {
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-        }
-
-        .reply-preview-text {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .cancel-reply {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 16px;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .cancel-reply:hover {
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--danger-color);
         }
 
         /* Overlay */
@@ -722,6 +815,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             padding: 10px 16px;
             background-color: var(--card-bg);
             border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
 
         .file-preview-container.show {
@@ -890,6 +984,14 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             background-image: none;
         }
 
+        body.dark-mode .message-reply-preview {
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        body.dark-mode .message-reply-preview:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
         body.dark-mode .message-input {
             background-color: var(--input-bg);
             color: var(--text-dark);
@@ -900,9 +1002,15 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             color: var(--text-secondary);
         }
 
-        body.dark-mode .input-area {
+        body.dark-mode .input-area,
+        body.dark-mode .reply-preview-bar,
+        body.dark-mode .input-reply-container {
             background-color: var(--card-bg);
             border-top-color: var(--border-color);
+        }
+
+        body.dark-mode .reply-preview-bar {
+            border-bottom-color: var(--border-color);
         }
 
         body.dark-mode .attachment-link {
@@ -918,11 +1026,6 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
         body.dark-mode .file-preview-container {
             background-color: var(--card-bg);
             border-top-color: var(--border-color);
-        }
-
-        body.dark-mode .reply-preview {
-            background-color: var(--card-bg);
-            border-bottom-color: var(--border-color);
         }
 
         body.dark-mode .message-actions {
@@ -991,14 +1094,14 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             color: var(--text-dark);
         }
 
-        /* Responsive adjustments */
+        body.dark-mode .reply-preview-bar .reply-preview-label {
+            color: var(--secondary-color);
+        }
+
+        /* RESPONSIVE STYLES */
         @media (max-width: 600px) {
             .main-container {
                 padding: 0;
-            }
-
-            .messages-container {
-                margin-bottom: 0;
             }
 
             .chat-container {
@@ -1007,23 +1110,128 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             }
 
             .message {
-                max-width: 80%;
+                max-width: 85%;
             }
 
             .chat-header {
-                padding: 10px 14px;
+                padding: 8px 12px;
+                min-height: 56px;
+            }
+
+            .chat-avatar {
+                width: 36px;
+                height: 36px;
+            }
+
+            .chat-name {
+                font-size: 15px;
+            }
+
+            .messages-container {
+                padding: 10px 12px;
+            }
+
+            .reply-preview-bar {
+                padding: 6px 12px;
             }
 
             .input-area {
-                padding: 8px 12px;
+                padding: 8px 10px;
+                padding-bottom: max(8px, var(--safe-area-inset-bottom));
+                gap: 6px;
             }
 
             .message-input {
-                padding: 8px 14px;
+                padding: 8px 12px;
+                font-size: 16px;
+                min-height: 40px;
+            }
+
+            .input-button {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+
+            .send-button {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+            }
+
+            .chat-header > div:last-child {
+                display: none;
+            }
+
+            .message-reply-preview .reply-preview-content {
+                font-size: 11px;
+                max-width: 200px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .input-area {
+                padding: 6px 8px;
+                padding-bottom: max(6px, var(--safe-area-inset-bottom));
+                gap: 4px;
+            }
+
+            .message-input {
+                padding: 6px 10px;
+                font-size: 15px;
+                min-height: 36px;
+            }
+
+            .input-button {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .send-button {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+            }
+
+            .message {
+                max-width: 90%;
+                padding: 6px 8px;
+            }
+
+            .message-text {
+                font-size: 13px;
+            }
+
+            .chat-header {
+                padding: 6px 10px;
+                min-height: 50px;
+            }
+
+            .chat-avatar {
+                width: 32px;
+                height: 32px;
+            }
+
+            .reply-preview-bar {
+                padding: 4px 10px;
+            }
+
+            .reply-preview-bar .reply-preview-message {
+                font-size: 11px;
+            }
+
+            .message-reply-preview .reply-preview-content {
+                font-size: 10px;
+                max-width: 150px;
             }
         }
 
         @media (min-width: 768px) {
+            .main-container {
+                padding: 0 20px;
+            }
+
             .chat-container {
                 width: 80%;
                 max-width: 1200px;
@@ -1034,9 +1242,22 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             }
         }
 
+        @media (min-width: 1200px) {
+            .chat-container {
+                width: 100%;
+                max-width: 1200px;
+            }
+        }
+
         .input-error {
             border: 2px solid var(--danger-color) !important;
             box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15) !important;
+        }
+
+        @supports (-webkit-touch-callout: none) {
+            .input-area {
+                padding-bottom: max(10px, var(--safe-area-inset-bottom));
+            }
         }
     </style>
 </head>
@@ -1054,13 +1275,34 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
 
                 <div class="chat-header-content">
                     <div class="chat-avatar">
-                        <?php if (!empty($contact_profile_photo) && $contact_profile_photo !== '../asssets/images/user.png'): ?>
-                            <img src="<?php echo htmlspecialchars($contact_profile_photo); ?>" alt="<?php echo htmlspecialchars($contact_name); ?>" class="avatar-img">
+                        <?php 
+                        $show_photo = false;
+                        $photo_url = '';
+                        
+                        if (!empty($contact_profile_photo)) {
+                            $clean_path = ltrim($contact_profile_photo, '/');
+                            $full_path = __DIR__ . '/../' . $clean_path;
+                            
+                            if ($clean_path !== 'assets/images/user.png' && 
+                                $clean_path !== 'asssets/images/user.png' && 
+                                file_exists($full_path)) {
+                                $show_photo = true;
+                                $photo_url = $contact_profile_photo;
+                            }
+                        }
+                        ?>
+                        
+                        <?php if ($show_photo): ?>
+                            <img src="<?php echo htmlspecialchars($photo_url); ?>" 
+                                alt="<?php echo htmlspecialchars($contact_name); ?>" 
+                                class="avatar-img"
+                                onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23128C7E%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%23fff%22 font-size=%2250%22 font-weight=%22bold%22 x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22%3E<?php echo strtoupper(substr($contact_name ?? 'U', 0, 1)); ?>%3C/text%3E%3C/svg%3E';">
                         <?php else: ?>
                             <div style="width:100%; height:100%; background-color:#128C7E; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">
                                 <?php echo strtoupper(substr($contact_name ?? 'U', 0, 1)); ?>
                             </div>
                         <?php endif; ?>
+                        
                         <span class="online-status"></span>
                     </div>
 
@@ -1069,16 +1311,8 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                         <div class="chat-status" id="contactStatus">Online</div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Reply Preview -->
-            <div class="reply-preview" id="replyPreview">
-                <div class="reply-preview-content">
-                    <div class="reply-preview-text" id="replyPreviewText"></div>
-                </div>
-                <button class="cancel-reply" id="cancelReplyButton">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div style="flex-shrink: 0; width: 40px;" class="header-right-spacer"></div>
             </div>
 
             <!-- Messages Container -->
@@ -1095,6 +1329,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                         $message_id = $message['id'];
                         $is_edited = $message['is_edited'] ?? 0;
                         $is_deleted = $message['is_deleted'] ?? 0;
+                        $reply_to_id = $message['reply_to_id'] ?? null;
 
                         // Determine read status
                         $is_read = false;
@@ -1108,43 +1343,76 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                         }
                         
                         $deleted_class = $is_deleted ? ' deleted' : '';
+                        
+                        // Fetch replied message details if exists
+                        $replied_message_data = null;
+                        if (!empty($reply_to_id)) {
+                            $reply_query = "
+                                SELECT m.message_text, m.attachment_path, m.message_type, m.is_deleted,
+                                       u.fullname, u.username 
+                                FROM messages m 
+                                JOIN users u ON m.sender_id = u.id 
+                                WHERE m.id = ?
+                            ";
+                            $reply_stmt = $conn->prepare($reply_query);
+                            $reply_stmt->bind_param("i", $reply_to_id);
+                            $reply_stmt->execute();
+                            $reply_result = $reply_stmt->get_result();
+                            $replied_message_data = $reply_result->fetch_assoc();
+                            $reply_stmt->close();
+                        }
                         ?>
 
-                        <div class="message <?php echo $message_class . $deleted_class; ?>" data-message-id="<?php echo $message_id; ?>" data-message-type="<?php echo $message_type; ?>">
-                            <?php if (isset($message['reply_to_id']) && !empty($message['reply_to_id'])): ?>
-                                <?php
-                                // Fetch replied message details
-                                $reply_query = "
-                                    SELECT m.message_text, m.attachment_path, m.message_type, u.fullname, u.username 
-                                    FROM messages m 
-                                    JOIN users u ON m.sender_id = u.id 
-                                    WHERE m.id = ?
-                                ";
-                                $reply_stmt = $conn->prepare($reply_query);
-                                $reply_stmt->bind_param("i", $message['reply_to_id']);
-                                $reply_stmt->execute();
-                                $reply_result = $reply_stmt->get_result();
-                                $replied_message = $reply_result->fetch_assoc();
-                                $reply_stmt->close();
-                                
-                                $reply_content = '';
-                                if ($replied_message) {
-                                    if (!empty($replied_message['attachment_path'])) {
-                                        $reply_content = '📎 ' . ucfirst($replied_message['message_type']);
-                                    } else {
-                                        $reply_content = substr($replied_message['message_text'], 0, 100);
-                                    }
-                                    $reply_sender = $replied_message['fullname'] ?? $replied_message['username'];
-                                }
-                                ?>
-                                <?php if ($replied_message): ?>
-                                <div class="reply-indicator">
-                                    <div>
-                                        <div class="reply-sender"><?php echo htmlspecialchars($reply_sender); ?></div>
-                                        <div class="reply-content"><?php echo htmlspecialchars($reply_content); ?></div>
+                        <div class="message <?php echo $message_class . $deleted_class; ?>" 
+                             data-message-id="<?php echo $message_id; ?>" 
+                             data-message-type="<?php echo $message_type; ?>"
+                             data-reply-to-id="<?php echo $reply_to_id ?? ''; ?>">
+                            
+                            <?php if ($replied_message_data): ?>
+                                <div class="message-reply-preview <?php echo $replied_message_data['is_deleted'] ? 'deleted-reply' : ''; ?>" 
+                                     onclick="scrollToMessage(<?php echo $reply_to_id; ?>)">
+                                    <div class="reply-preview-sender">
+                                        <i class="fas fa-reply"></i>
+                                        <?php 
+                                            $reply_sender_name = htmlspecialchars(
+                                                $replied_message_data['fullname'] ?? $replied_message_data['username'] ?? 'Unknown'
+                                            );
+                                            echo $reply_sender_name;
+                                        ?>
                                     </div>
+                                    <?php if ($replied_message_data['is_deleted']): ?>
+                                        <div class="reply-preview-content" style="font-style: italic;">
+                                            <i class="fas fa-ban"></i> This message was deleted
+                                        </div>
+                                    <?php elseif (!empty($replied_message_data['attachment_path'])): ?>
+                                        <div class="reply-preview-attachment">
+                                            <?php
+                                            $reply_ext = strtolower(pathinfo($replied_message_data['attachment_path'], PATHINFO_EXTENSION));
+                                            if (in_array($reply_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                                                echo '<i class="fas fa-image"></i> Photo';
+                                            } elseif (in_array($reply_ext, ['mp4', 'webm', 'ogv'])) {
+                                                echo '<i class="fas fa-video"></i> Video';
+                                            } elseif (in_array($reply_ext, ['mp3', 'wav', 'ogg'])) {
+                                                echo '<i class="fas fa-music"></i> Audio';
+                                            } else {
+                                                echo '<i class="fas fa-file"></i> File';
+                                            }
+                                            ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="reply-preview-content">
+                                            <?php 
+                                                $reply_text = htmlspecialchars_decode($replied_message_data['message_text']);
+                                                // Get first 150 characters for preview
+                                                $preview = mb_substr($reply_text, 0, 150);
+                                                if (mb_strlen($reply_text) > 150) {
+                                                    $preview .= '...';
+                                                }
+                                                echo htmlspecialchars($preview);
+                                            ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                                <?php endif; ?>
                             <?php endif; ?>
 
                             <div class="message-text">
@@ -1184,14 +1452,12 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                     <div class="message-attachment">
                                         <audio controls class="message-audio">
                                             <source src="<?php echo htmlspecialchars($attachment_path); ?>" type="audio/<?php echo ($file_extension === 'mp3' ? 'mpeg' : $file_extension); ?>">
-                                            Your browser does not support the audio element.
                                         </audio>
                                     </div>
                                 <?php elseif (in_array($file_extension, ['mp4', 'webm', 'ogv', 'avi', 'mkv'])): ?>
                                     <div class="message-attachment">
                                         <video controls class="message-video">
                                             <source src="<?php echo htmlspecialchars($attachment_path); ?>" type="video/<?php echo ($file_extension === 'mp4' ? 'mp4' : $file_extension); ?>">
-                                            Your browser does not support the video tag.
                                         </video>
                                     </div>
                                 <?php else: ?>
@@ -1228,7 +1494,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                 <button class="message-action" onclick="confirmDeleteMessage(<?php echo $message_id; ?>)">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                <button class="message-action" onclick="setReplyMessage(<?php echo $message_id; ?>, '<?php echo addslashes(substr($message_text, 0, 50)); ?>', '<?php echo $is_sender ? 'You' : htmlspecialchars($contact_name ?? 'User'); ?>')">
+                                <button class="message-action" onclick="setReplyMessage(<?php echo $message_id; ?>, '<?php echo addslashes(mb_substr($message_text, 0, 150)); ?>', '<?php echo addslashes($is_sender ? 'You' : ($contact_name ?? 'User')); ?>', '<?php echo $message_type; ?>', '<?php echo addslashes($attachment_path); ?>')">
                                     <i class="fas fa-reply"></i>
                                 </button>
                             </div>
@@ -1250,20 +1516,34 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             <!-- File Preview -->
             <div class="file-preview-container" id="filePreviewContainer"></div>
 
-            <!-- Input Area -->
-            <div class="input-area">
-                <button class="input-button" id="emojiButton" title="Emoji">
-                    <i class="far fa-smile"></i>
-                </button>
-                <button class="input-button" id="attachButton" title="Attach File">
-                    <i class="fas fa-paperclip"></i>
-                </button>
-                <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
-                <textarea class="message-input" id="messageInput" placeholder="Type a message" rows="1"></textarea>
-                <button class="send-button" id="sendButton" title="Send">
-                    <i class="fas fa-paper-plane"></i>
-                    <div class="spinner" id="sendSpinner"></div>
-                </button>
+            <!-- Input Reply Container (Reply Preview ABOVE Input) -->
+            <div class="input-reply-container">
+                <!-- Reply Preview Bar -->
+                <div class="reply-preview-bar" id="replyPreviewBar">
+                    <div class="reply-preview-info">
+                        <div class="reply-preview-label" id="replyPreviewLabel">Replying to User</div>
+                        <div class="reply-preview-message" id="replyPreviewMessage">Message preview...</div>
+                    </div>
+                    <button class="cancel-reply-btn" id="cancelReplyButton" title="Cancel reply" aria-label="Cancel reply">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <button class="input-button" id="emojiButton" title="Emoji" aria-label="Insert emoji">
+                        <i class="far fa-smile"></i>
+                    </button>
+                    <button class="input-button" id="attachButton" title="Attach File" aria-label="Attach file">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" multiple="false">
+                    <textarea class="message-input" id="messageInput" placeholder="Type a message" rows="1" aria-label="Message input"></textarea>
+                    <button class="send-button" id="sendButton" title="Send message" aria-label="Send message">
+                        <i class="fas fa-paper-plane"></i>
+                        <div class="spinner" id="sendSpinner"></div>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1309,11 +1589,9 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
         let currentReplyId = null;
         let currentReplyContent = '';
         let currentReplySender = '';
+        let currentReplyType = '';
+        let currentReplyAttachment = '';
         let currentConversationId = <?php echo $conversation_id ?? 'null'; ?>;
-
-        // Initialize touch events for swipe to reply
-        let touchStartX = 0;
-        let touchStartY = 0;
 
         // DOM Ready Handler
         document.addEventListener('DOMContentLoaded', function() {
@@ -1323,7 +1601,17 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             setupMessageSending();
             setupModalHandlers();
             setupSwipeToReply();
+            setupReplyPreviewClick();
             scrollToBottom();
+            
+            // Prevent body scroll when keyboard opens on iOS
+            document.body.addEventListener('focus', function(e) {
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+                    setTimeout(function() {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                }
+            }, true);
         });
 
         // Auto-resize textarea
@@ -1332,6 +1620,12 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             messageInput.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+            
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value.length <= 1) {
+                    this.style.height = 'auto';
+                }
             });
         }
 
@@ -1349,6 +1643,13 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             fileInput.addEventListener('change', function() {
                 if (this.files.length > 0) {
                     const file = this.files[0];
+                    
+                    if (file.size > 50 * 1024 * 1024) {
+                        alert('File size must be less than 50MB');
+                        this.value = '';
+                        return;
+                    }
+                    
                     fileNameDisplay.textContent = '📎 ' + file.name;
                     fileNameDisplay.classList.add('show');
 
@@ -1360,12 +1661,12 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                         reader.onload = function(e) {
                             filePreviewContainer.innerHTML = `
                                 <div class="file-preview">
-                                    <img src="${e.target.result}" alt="Preview">
+                                    <img src="${e.target.result}" alt="Preview" style="max-width: 100px; max-height: 100px; border-radius: 8px;">
                                     <div class="file-info">
-                                        <span>${file.name}</span>
-                                        <small>${formatFileSize(file.size)}</small>
+                                        <span style="font-size: 13px; color: var(--text-secondary);">${file.name}</span>
+                                        <small style="font-size: 11px; color: var(--text-secondary);">${formatFileSize(file.size)}</small>
                                     </div>
-                                    <button class="remove-file-btn" onclick="removeFile()">
+                                    <button class="remove-file-btn" onclick="removeFile()" aria-label="Remove file">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
@@ -1378,11 +1679,14 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                         reader.onload = function(e) {
                             filePreviewContainer.innerHTML = `
                                 <div class="file-preview">
-                                    <video controls>
+                                    <video controls style="max-width: 100px; max-height: 100px; border-radius: 8px;">
                                         <source src="${e.target.result}" type="${file.type}">
-                                        Your browser doesn't support video preview.
                                     </video>
-                                    <button class="remove-file-btn" onclick="removeFile()">
+                                    <div class="file-info">
+                                        <span style="font-size: 13px; color: var(--text-secondary);">${file.name}</span>
+                                        <small style="font-size: 11px; color: var(--text-secondary);">${formatFileSize(file.size)}</small>
+                                    </div>
+                                    <button class="remove-file-btn" onclick="removeFile()" aria-label="Remove file">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
@@ -1398,7 +1702,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                     <span>${file.name}</span>
                                     <small>${formatFileSize(file.size)}</small>
                                 </div>
-                                <button class="remove-file-btn" onclick="removeFile()">
+                                <button class="remove-file-btn" onclick="removeFile()" aria-label="Remove file">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -1419,7 +1723,6 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             };
         }
 
-        // Format file size
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -1431,16 +1734,13 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
         // Profile Picture Preview
         function setupProfilePicturePreview() {
             const profilePics = document.querySelectorAll('.chat-avatar .avatar-img, .chat-avatar > div');
-
             profilePics.forEach(pic => {
                 pic.style.cursor = 'pointer';
-
                 pic.addEventListener('click', function(e) {
                     e.stopPropagation();
                     const overlay = document.getElementById('overlay');
                     const profilePicUrl = this.tagName === 'IMG' ? this.src : null;
                     const contactName = this.alt || '<?php echo addslashes($contact_name ?? 'User'); ?>';
-
                     overlay.innerHTML = `
                         <div class="premium-preview-container">
                             <div class="premium-preview-content">
@@ -1452,28 +1752,25 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                     <h3>${contactName}</h3>
                                     <p class="status online">Online</p>
                                 </div>
-                                <button class="premium-close-btn">
+                                <button class="premium-close-btn" aria-label="Close preview">
                                     <i class="fas fa-times"></i>
                                 </button>
                                 <div class="premium-preview-actions">
-                                    <button class="premium-action-btn" title="View Full Size">
+                                    <button class="premium-action-btn" title="View Full Size" aria-label="View full size">
                                         <i class="fas fa-expand"></i>
                                     </button>
-                                    <button class="premium-action-btn" title="Download">
+                                    <button class="premium-action-btn" title="Download" aria-label="Download">
                                         <i class="fas fa-download"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
                     `;
-
                     overlay.style.display = 'flex';
                     document.body.style.overflow = 'hidden';
-
                     setTimeout(() => {
                         overlay.querySelector('.premium-preview-container').classList.add('active');
                     }, 10);
-
                     overlay.querySelector('.premium-close-btn').addEventListener('click', function() {
                         overlay.querySelector('.premium-preview-container').classList.remove('active');
                         setTimeout(() => {
@@ -1482,10 +1779,8 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                             document.body.style.overflow = '';
                         }, 300);
                     });
-
                     const expandBtn = overlay.querySelector('.premium-action-btn:nth-child(1)');
                     const downloadBtn = overlay.querySelector('.premium-action-btn:nth-child(2)');
-
                     if (profilePicUrl) {
                         expandBtn.addEventListener('click', () => window.open(profilePicUrl, '_blank'));
                         downloadBtn.addEventListener('click', () => {
@@ -1500,7 +1795,6 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                     }
                 });
             });
-
             document.getElementById('overlay').addEventListener('click', function(e) {
                 if (e.target === this) {
                     const container = this.querySelector('.premium-preview-container');
@@ -1532,16 +1826,14 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
 
             function sendMessage() {
                 const message = messageInput.value.trim();
-                const file = fileInput.files[0];
+                const file = document.getElementById('fileInput').files[0];
 
                 if (!message && !file) {
                     messageInput.classList.add('input-error');
-                    messageInput.addEventListener('input', removeInputError);
+                    setTimeout(() => {
+                        messageInput.classList.remove('input-error');
+                    }, 2000);
                     return;
-                }
-
-                function removeInputError() {
-                    messageInput.classList.remove('input-error');
                 }
 
                 const formData = new FormData();
@@ -1559,7 +1851,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                 sendButton.querySelector('i').style.display = 'none';
                 sendSpinner.style.display = 'block';
 
-                fetch('send_message.php', {
+                fetch('content/send_message.php', {
                         method: 'POST',
                         body: formData
                     })
@@ -1579,12 +1871,10 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                 cancelReply();
                             }
 
-                            // Update conversation ID if it was newly created
                             if (data.conversation_id) {
                                 currentConversationId = data.conversation_id;
                             }
 
-                            // Reload messages or append new message
                             location.reload();
                         } else {
                             throw new Error(data.error || 'Failed to send message');
@@ -1601,6 +1891,22 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             }
         }
 
+        // Click on reply preview inside message bubble to scroll to original message
+        function setupReplyPreviewClick() {
+            window.scrollToMessage = function(messageId) {
+                const targetMessage = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (targetMessage) {
+                    targetMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Highlight the message briefly
+                    targetMessage.style.boxShadow = '0 0 0 3px var(--primary-color)';
+                    targetMessage.style.transition = 'box-shadow 0.3s ease';
+                    setTimeout(() => {
+                        targetMessage.style.boxShadow = '';
+                    }, 2000);
+                }
+            };
+        }
+
         // Modal handlers
         function setupModalHandlers() {
             // Edit modal
@@ -1608,6 +1914,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                 currentEditId = messageId;
                 document.getElementById('editMessageInput').value = messageText;
                 document.getElementById('editModal').style.display = 'flex';
+                document.getElementById('editMessageInput').focus();
             };
 
             window.closeEditModal = function() {
@@ -1617,17 +1924,14 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
 
             window.updateMessage = function() {
                 const updatedText = document.getElementById('editMessageInput').value.trim();
-
                 if (!updatedText) {
                     alert("Message cannot be empty");
                     return;
                 }
-
                 const formData = new FormData();
                 formData.append('message_id', currentEditId);
                 formData.append('message', updatedText);
-
-                fetch('edit_message.php', {
+                fetch('content/edit_message.php', {
                         method: 'POST',
                         body: formData
                     })
@@ -1658,11 +1962,9 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
 
             document.getElementById('confirmDeleteButton').addEventListener('click', function() {
                 if (!currentDeleteId) return;
-
                 const formData = new FormData();
                 formData.append('message_id', currentDeleteId);
-
-                fetch('delete_message.php', {
+                fetch('content/delete_message.php', {
                         method: 'POST',
                         body: formData
                     })
@@ -1680,25 +1982,74 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                     });
             });
 
-            // Reply functions
-            window.setReplyMessage = function(messageId, messageContent, senderName) {
+            window.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+                    if (e.target.id === 'editModal') {
+                        currentEditId = null;
+                    }
+                    if (e.target.id === 'deleteModal') {
+                        currentDeleteId = null;
+                    }
+                }
+            });
+
+            // Reply functions - WhatsApp style
+            window.setReplyMessage = function(messageId, messageContent, senderName, messageType, attachmentPath) {
                 currentReplyId = messageId;
                 currentReplyContent = messageContent;
                 currentReplySender = senderName;
+                currentReplyType = messageType;
+                currentReplyAttachment = attachmentPath;
 
-                const replyPreview = document.getElementById('replyPreview');
-                const replyPreviewText = document.getElementById('replyPreviewText');
+                const replyPreviewBar = document.getElementById('replyPreviewBar');
+                const replyPreviewLabel = document.getElementById('replyPreviewLabel');
+                const replyPreviewMessage = document.getElementById('replyPreviewMessage');
 
-                replyPreviewText.textContent = `Replying to ${senderName}: ${messageContent}${messageContent.length > 50 ? '...' : ''}`;
-                replyPreview.classList.add('show');
+                // Set the label "Replying to [Name]"
+                replyPreviewLabel.textContent = `Replying to ${senderName}`;
+
+                // Set the preview message content
+                let previewText = '';
+                if (messageType && messageType !== 'text' && attachmentPath) {
+                    // It's an attachment
+                    const ext = attachmentPath.split('.').pop().toLowerCase();
+                    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                        previewText = '📷 Photo';
+                    } else if (['mp4', 'webm', 'ogv', 'avi', 'mkv'].includes(ext)) {
+                        previewText = '🎬 Video';
+                    } else if (['mp3', 'wav', 'ogg'].includes(ext)) {
+                        previewText = '🎵 Audio';
+                    } else {
+                        previewText = '📎 File';
+                    }
+                } else {
+                    // Text message - truncate with ellipsis if too long
+                    if (messageContent.length > 80) {
+                        previewText = messageContent.substring(0, 80) + '...';
+                    } else {
+                        previewText = messageContent;
+                    }
+                }
+
+                replyPreviewMessage.textContent = previewText;
+                replyPreviewBar.classList.add('show');
+                
+                // Focus on input field
                 document.getElementById('messageInput').focus();
+                
+                // Scroll to bottom
+                scrollToBottom();
             };
 
             window.cancelReply = function() {
                 currentReplyId = null;
                 currentReplyContent = '';
                 currentReplySender = '';
-                document.getElementById('replyPreview').classList.remove('show');
+                currentReplyType = '';
+                currentReplyAttachment = '';
+                document.getElementById('replyPreviewBar').classList.remove('show');
+                document.getElementById('messageInput').focus();
             };
 
             document.getElementById('cancelReplyButton').addEventListener('click', cancelReply);
@@ -1724,16 +2075,17 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                     if (Math.abs(dx) > 50 && Math.abs(dy) < 50 && dx > 0) {
                         const messageId = this.getAttribute('data-message-id');
                         const messageText = this.querySelector('.message-text')?.textContent || '';
+                        const messageType = this.getAttribute('data-message-type') || 'text';
                         const isSender = this.classList.contains('sent');
                         const senderName = isSender ? 'You' : '<?php echo addslashes($contact_name ?? 'User'); ?>';
+                        const attachmentPath = this.querySelector('.message-image')?.src || '';
 
-                        setReplyMessage(messageId, messageText.substring(0, 50), senderName);
+                        setReplyMessage(messageId, messageText.substring(0, 80), senderName, messageType, attachmentPath);
                     }
                 }, { passive: true });
             });
         }
 
-        // Scroll to bottom
         function scrollToBottom() {
             const messagesContainer = document.getElementById('messagesContainer');
             if (messagesContainer) {
@@ -1741,15 +2093,12 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             }
         }
 
-        // Show more message text
         window.showMoreMessage = function(button, messageId) {
             const messageContainer = button.parentElement;
             const fullMessage = messageContainer.querySelector('.full-message');
             const words = fullMessage.textContent.split(/\s+/);
-
             let currentCount = parseInt(messageContainer.getAttribute('data-words-shown')) || 50;
             const newCount = currentCount + 50;
-
             if (newCount >= words.length) {
                 messageContainer.innerHTML = fullMessage.innerHTML;
             } else {
@@ -1761,25 +2110,23 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             }
         };
 
-        // Helper function to replace \n with <br>
         function nl2br(str) {
             return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2');
         }
 
-        // Open image in overlay
         window.openImage = function(imageUrl) {
             const overlay = document.getElementById('overlay');
             overlay.innerHTML = `
                 <div style="position: relative; max-width: 90%; max-height: 90%;">
                     <img src="${imageUrl}" alt="Preview" style="max-width: 100%; max-height: 90vh; border-radius: 8px;">
                     <button onclick="this.closest('#overlay').style.display='none'" 
-                            style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                            style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;"
+                            aria-label="Close preview">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             `;
             overlay.style.display = 'flex';
-
             overlay.addEventListener('click', function(e) {
                 if (e.target === this) {
                     this.style.display = 'none';
