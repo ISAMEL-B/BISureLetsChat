@@ -2135,5 +2135,6 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             });
         };
     </script>
+    <?php include __DIR__ . '/../includes/call_module.php'; ?>
 </body>
 </html>

@@ -594,5 +594,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         
         document.addEventListener('DOMContentLoaded', () => UsersManager.init());
     </script>
+    <?php include __DIR__ . '/../includes/call_module.php'; ?>
 </body>
 </html>

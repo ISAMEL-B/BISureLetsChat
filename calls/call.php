@@ -1,12 +1,9 @@
 <?php
-//==============================
-// PHP SESSION AND CONFIGURATION START
-//==============================
-session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-require_once __DIR__ . '/../config/db.php';
+
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../config/db.php';
 
 // ✅ FIXED: Uses correct column names from users table
 $current_user_id = $_SESSION['user_id'];
@@ -1342,32 +1339,32 @@ $result = $stmt->get_result();
     </script>
 
     <script>
-    <?php if (isset($_SESSION['pending_call'])): ?>
-        const pendingCall = <?= json_encode($_SESSION['pending_call']) ?>;
-        <?php unset($_SESSION['pending_call']); ?>
-        
-        (function waitForSocket() {
-            if (typeof sock !== 'undefined' && sock.readyState === WebSocket.OPEN) {
-                state.isVideo = pendingCall.isVideo;
-                state.remoteId = String(pendingCall.from);
-                state.remoteName = pendingCall.fromName;
-                state.remotePicture = pendingCall.fromPicture || '';
-                state.pendingOffer = null;
-                state.dbCallId = pendingCall.callId || null;
-                state.callState = 'ringing';
-                isRinging = true;
-                
-                incomingName.textContent = state.remoteName;
-                incomingType.textContent = state.isVideo ? '📹 Video Call' : '📞 Voice Call';
-                updateIncomingAvatarEl();
-                incomingOverlay.classList.add('cl-active');
-                ringtone.currentTime = 0;
-                ringtone.play().catch(() => {});
-            } else {
-                setTimeout(waitForSocket, 300);
-            }
-        })();
-    <?php endif; ?>
+        <?php if (isset($_SESSION['pending_call'])): ?>
+            const pendingCall = <?= json_encode($_SESSION['pending_call']) ?>;
+            <?php unset($_SESSION['pending_call']); ?>
+            
+            (function waitForSocket() {
+                if (typeof sock !== 'undefined' && sock.readyState === WebSocket.OPEN) {
+                    state.isVideo = pendingCall.isVideo;
+                    state.remoteId = String(pendingCall.from);
+                    state.remoteName = pendingCall.fromName;
+                    state.remotePicture = pendingCall.fromPicture || '';
+                    state.pendingOffer = null;
+                    state.dbCallId = pendingCall.callId || null;
+                    state.callState = 'ringing';
+                    isRinging = true;
+                    
+                    incomingName.textContent = state.remoteName;
+                    incomingType.textContent = state.isVideo ? '📹 Video Call' : '📞 Voice Call';
+                    updateIncomingAvatarEl();
+                    incomingOverlay.classList.add('cl-active');
+                    ringtone.currentTime = 0;
+                    ringtone.play().catch(() => {});
+                } else {
+                    setTimeout(waitForSocket, 300);
+                }
+            })();
+        <?php endif; ?>
     </script>
 </body>
 </html>

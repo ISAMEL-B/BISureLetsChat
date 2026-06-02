@@ -1,5 +1,4 @@
 <?php 
-session_start();
 
 // Check dark mode preference
 $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';

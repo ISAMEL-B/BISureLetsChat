@@ -6,8 +6,6 @@ date_default_timezone_set('Africa/Kampala');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();
-
 // Check dark mode preference
 $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';
 
@@ -768,8 +766,10 @@ $current_user_id = $_SESSION['user_id'];
 
     <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-    <?php include __DIR__ . '/../includes/call_receiver.php'; ?>
+    <?php //include __DIR__ . '/../includes/call_receiver.php'; ?>
     
+    <?php include __DIR__ . '/../includes/call_module.php'; ?>
+
     <script>
         // Contact Management with AJAX - Optimized for speed
         const ContactsManager = {

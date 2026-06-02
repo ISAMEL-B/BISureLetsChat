@@ -9,4 +9,6 @@
 //     exit();
 // }
 
+session_start();
+
 ?>

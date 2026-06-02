@@ -11,8 +11,6 @@ date_default_timezone_set('Africa/Kampala');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();
-
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
@@ -662,7 +660,7 @@ $stmt->close();
 
         <?php include __DIR__ . '/../includes/navbar.php'; ?>
     </div>
-
+    <?php // include __DIR__ . '/../includes/call_receiver.php'; ?>
     <script>
         let currentImageUrl = '';
 
@@ -754,6 +752,7 @@ $stmt->close();
             }
         });
     </script>
+    <?php include __DIR__ . '/../includes/call_module.php'; ?>
 </body>
 
 </html>
