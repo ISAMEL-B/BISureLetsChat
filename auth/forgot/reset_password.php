@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 echo '<script>
                     alert("Your password has been successfully reset. Please login with your new password.");
-                    window.location.href = "../login.php";
+                    window.location.href = "../register.php";
                 </script>';
                 exit;
             } else {

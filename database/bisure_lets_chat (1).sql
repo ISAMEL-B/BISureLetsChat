@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 02, 2026 at 02:12 AM
+-- Generation Time: Jun 04, 2026 at 01:17 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -37,6 +37,28 @@ CREATE TABLE `archived_chats` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `block_reasons`
+--
+
+CREATE TABLE `block_reasons` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `reason` text NOT NULL,
+  `blocked_by` bigint(20) UNSIGNED NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `block_reasons`
+--
+
+INSERT INTO `block_reasons` (`id`, `user_id`, `reason`, `blocked_by`, `created_at`) VALUES
+(1, 1, 'tooooo much', 2, '2026-06-03 18:03:52'),
+(2, 1, 'when is it then', 2, '2026-06-03 20:29:01');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `calls`
 --
 
@@ -50,6 +72,152 @@ CREATE TABLE `calls` (
   `ended_at` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `calls`
+--
+
+INSERT INTO `calls` (`id`, `caller_id`, `receiver_id`, `call_type`, `status`, `started_at`, `ended_at`, `created_at`) VALUES
+(1, 2, 1, 'video', 'ended', '2026-06-02 05:00:51', '2026-06-02 23:46:17', '2026-06-02 02:00:42'),
+(2, 2, 1, 'voice', 'ended', '2026-06-02 05:01:36', '2026-06-02 05:02:14', '2026-06-02 02:01:31'),
+(3, 1, 2, 'video', 'ended', '2026-06-02 05:02:29', '2026-06-02 05:02:54', '2026-06-02 02:02:29'),
+(4, 1, 2, 'video', 'ended', '2026-06-02 05:03:03', '2026-06-02 05:03:18', '2026-06-02 02:02:58'),
+(5, 2, 1, 'video', 'ended', '2026-06-02 05:03:26', '2026-06-02 05:03:29', '2026-06-02 02:03:21'),
+(6, 1, 2, 'video', 'ended', '2026-06-02 05:03:37', '2026-06-02 05:03:51', '2026-06-02 02:03:33'),
+(7, 2, 1, 'video', 'ended', '2026-06-02 05:09:54', '2026-06-02 05:10:18', '2026-06-02 02:09:47'),
+(8, 1, 2, 'video', 'ended', '2026-06-02 05:39:11', '2026-06-02 05:39:25', '2026-06-02 02:39:11'),
+(9, 1, 2, 'voice', 'ended', '2026-06-02 05:39:27', '2026-06-02 05:39:37', '2026-06-02 02:39:27'),
+(10, 1, 2, 'video', 'ended', '2026-06-02 05:58:43', '2026-06-02 05:58:55', '2026-06-02 02:58:43'),
+(11, 1, 2, 'video', 'ended', '2026-06-02 05:59:00', '2026-06-02 05:59:09', '2026-06-02 02:59:00'),
+(12, 2, 1, 'video', 'declined', '2026-06-02 05:59:22', '2026-06-02 05:59:32', '2026-06-02 02:59:22'),
+(13, 2, 1, 'video', 'ended', '2026-06-02 05:59:40', '2026-06-02 05:59:50', '2026-06-02 02:59:40'),
+(14, 2, 1, 'video', 'ended', '2026-06-02 05:59:52', '2026-06-02 06:00:09', '2026-06-02 02:59:52'),
+(15, 2, 1, 'video', 'declined', '2026-06-02 06:00:19', '2026-06-02 06:00:26', '2026-06-02 03:00:19'),
+(16, 2, 1, 'video', 'ended', '2026-06-02 06:00:33', '2026-06-02 06:00:40', '2026-06-02 03:00:33'),
+(17, 2, 1, 'video', 'ended', '2026-06-02 06:02:10', '2026-06-02 06:02:19', '2026-06-02 03:02:10'),
+(18, 2, 1, 'video', 'declined', '2026-06-02 06:02:38', '2026-06-02 06:02:43', '2026-06-02 03:02:38'),
+(19, 2, 1, 'video', 'ended', '2026-06-02 06:02:52', '2026-06-02 06:03:07', '2026-06-02 03:02:52'),
+(20, 2, 1, 'video', 'ended', '2026-06-02 06:03:18', '2026-06-02 06:03:34', '2026-06-02 03:03:18'),
+(21, 2, 1, 'video', 'ended', '2026-06-02 06:03:53', '2026-06-02 06:04:19', '2026-06-02 03:03:53'),
+(22, 2, 1, 'video', 'ended', '2026-06-02 06:04:43', '2026-06-02 06:05:06', '2026-06-02 03:04:43'),
+(23, 2, 1, 'video', 'ended', '2026-06-02 06:05:25', '2026-06-02 06:05:34', '2026-06-02 03:05:25'),
+(24, 2, 1, 'video', 'ended', '2026-06-02 06:06:09', '2026-06-02 06:06:23', '2026-06-02 03:06:09'),
+(25, 2, 1, 'video', 'ended', '2026-06-02 06:10:34', '2026-06-02 06:10:49', '2026-06-02 03:10:34'),
+(26, 2, 1, 'video', 'ended', '2026-06-02 06:13:36', '2026-06-02 06:22:01', '2026-06-02 03:13:36'),
+(27, 2, 1, 'video', 'declined', '2026-06-02 06:22:28', '2026-06-02 06:22:38', '2026-06-02 03:22:15'),
+(28, 2, 1, 'video', 'ended', '2026-06-02 06:22:47', '2026-06-02 06:23:05', '2026-06-02 03:22:47'),
+(29, 2, 1, 'video', 'ended', '2026-06-02 06:27:03', '2026-06-02 06:27:16', '2026-06-02 03:26:45'),
+(30, 2, 1, 'voice', 'ended', '2026-06-02 06:27:24', '2026-06-02 06:27:27', '2026-06-02 03:27:20'),
+(31, 2, 1, 'voice', 'ended', '2026-06-02 06:27:45', '2026-06-02 06:27:56', '2026-06-02 03:27:34'),
+(32, 2, 1, 'video', 'ended', '2026-06-02 06:28:32', '2026-06-02 06:28:40', '2026-06-02 03:28:16'),
+(33, 2, 1, 'video', 'declined', '2026-06-02 06:29:26', '2026-06-02 06:29:36', '2026-06-02 03:29:17'),
+(34, 2, 1, 'video', 'declined', '2026-06-02 06:29:39', '2026-06-02 06:29:48', '2026-06-02 03:29:39'),
+(35, 2, 1, 'video', 'answered', '2026-06-02 06:30:01', NULL, '2026-06-02 03:29:53'),
+(36, 2, 1, 'video', 'ended', '2026-06-02 06:30:29', '2026-06-02 06:30:32', '2026-06-02 03:30:13'),
+(37, 2, 1, 'video', 'missed', '2026-06-02 06:34:38', '2026-06-02 06:34:50', '2026-06-02 03:34:38'),
+(38, 2, 1, 'video', 'ended', '2026-06-02 06:34:59', '2026-06-02 06:35:32', '2026-06-02 03:34:59'),
+(39, 2, 1, 'voice', 'ended', '2026-06-02 06:36:11', '2026-06-02 06:36:24', '2026-06-02 03:36:11'),
+(40, 2, 1, 'video', 'ended', '2026-06-02 06:38:06', '2026-06-02 06:38:18', '2026-06-02 03:38:06'),
+(41, 2, 1, 'video', 'ended', '2026-06-02 06:38:50', '2026-06-02 06:39:04', '2026-06-02 03:38:50'),
+(42, 2, 1, 'video', 'missed', '2026-06-02 06:40:25', '2026-06-02 06:41:32', '2026-06-02 03:40:25'),
+(43, 2, 1, 'video', 'missed', '2026-06-02 06:42:30', '2026-06-02 06:43:36', '2026-06-02 03:42:30'),
+(44, 2, 1, 'video', 'ringing', '2026-06-02 06:44:15', NULL, '2026-06-02 03:44:15'),
+(45, 2, 1, 'video', 'ended', '2026-06-02 06:46:02', '2026-06-02 06:46:12', '2026-06-02 03:46:02'),
+(46, 2, 1, 'video', 'ended', '2026-06-02 06:46:25', '2026-06-02 06:46:35', '2026-06-02 03:46:20'),
+(47, 2, 1, 'video', 'ended', '2026-06-02 06:46:57', '2026-06-02 06:47:00', '2026-06-02 03:46:47'),
+(48, 1, 2, 'video', 'declined', '2026-06-02 06:47:04', '2026-06-02 06:47:15', '2026-06-02 03:47:04'),
+(49, 1, 2, 'video', 'ended', '2026-06-02 06:47:29', '2026-06-02 06:47:34', '2026-06-02 03:47:20'),
+(50, 2, 1, 'video', 'ended', '2026-06-02 06:50:00', '2026-06-02 06:50:14', '2026-06-02 03:50:00'),
+(51, 2, 1, 'video', 'declined', '2026-06-02 06:50:37', '2026-06-02 06:50:49', '2026-06-02 03:50:23'),
+(52, 2, 1, 'video', 'ended', '2026-06-02 06:51:00', '2026-06-02 06:51:12', '2026-06-02 03:51:00'),
+(53, 2, 1, 'video', 'ringing', '2026-06-02 06:51:18', NULL, '2026-06-02 03:51:18'),
+(54, 2, 1, 'video', 'ended', '2026-06-02 06:51:37', '2026-06-02 06:51:43', '2026-06-02 03:51:32'),
+(55, 2, 1, 'video', 'ended', '2026-06-02 06:51:57', '2026-06-02 06:52:01', '2026-06-02 03:51:49'),
+(56, 2, 1, 'video', 'ended', '2026-06-02 06:52:28', '2026-06-02 06:52:44', '2026-06-02 03:52:28'),
+(57, 2, 1, 'video', 'ringing', '2026-06-02 06:52:55', NULL, '2026-06-02 03:52:55'),
+(58, 2, 1, 'video', 'ended', '2026-06-02 06:53:17', '2026-06-02 06:53:33', '2026-06-02 03:53:17'),
+(59, 2, 1, 'video', 'ended', '2026-06-02 06:54:56', '2026-06-02 06:55:10', '2026-06-02 03:54:49'),
+(60, 2, 1, 'voice', 'ended', '2026-06-02 06:55:22', '2026-06-02 06:55:30', '2026-06-02 03:55:13'),
+(61, 2, 1, 'video', 'declined', '2026-06-02 06:55:59', '2026-06-02 06:56:07', '2026-06-02 03:55:51'),
+(62, 2, 1, 'video', 'declined', '2026-06-02 06:56:18', '2026-06-02 06:57:15', '2026-06-02 03:56:18'),
+(63, 2, 1, 'video', 'ended', '2026-06-02 06:57:53', '2026-06-02 06:58:04', '2026-06-02 03:57:53'),
+(64, 2, 1, 'video', 'declined', '2026-06-02 06:58:44', '2026-06-02 06:59:03', '2026-06-02 03:58:44'),
+(65, 2, 1, 'video', 'declined', '2026-06-02 07:01:54', '2026-06-02 07:01:59', '2026-06-02 04:01:49'),
+(66, 2, 1, 'video', 'ringing', '2026-06-02 07:02:12', NULL, '2026-06-02 04:02:12'),
+(67, 2, 1, 'video', 'declined', '2026-06-02 07:02:55', '2026-06-02 07:03:19', '2026-06-02 04:02:55'),
+(68, 2, 1, 'video', 'ended', '2026-06-02 07:07:31', '2026-06-02 07:07:36', '2026-06-02 04:07:26'),
+(69, 2, 1, 'video', 'declined', '2026-06-02 07:07:59', '2026-06-02 07:08:05', '2026-06-02 04:07:42'),
+(70, 2, 1, 'video', 'ended', '2026-06-02 07:10:28', '2026-06-02 07:10:32', '2026-06-02 04:10:24'),
+(71, 2, 1, 'video', 'ended', '2026-06-02 07:10:38', '2026-06-02 07:10:51', '2026-06-02 04:10:38'),
+(72, 2, 1, 'video', 'ended', '2026-06-02 07:11:44', '2026-06-02 07:11:54', '2026-06-02 04:11:28'),
+(73, 2, 1, 'video', 'ended', '2026-06-02 07:12:06', '2026-06-02 07:12:18', '2026-06-02 04:12:06'),
+(74, 2, 1, 'video', 'declined', '2026-06-02 07:12:31', '2026-06-02 07:12:40', '2026-06-02 04:12:20'),
+(75, 2, 1, 'video', 'declined', '2026-06-02 07:13:04', '2026-06-02 07:13:15', '2026-06-02 04:13:04'),
+(76, 2, 1, 'video', 'declined', '2026-06-02 07:18:46', '2026-06-02 07:19:01', '2026-06-02 04:18:42'),
+(77, 2, 1, 'video', 'declined', '2026-06-02 07:19:09', '2026-06-02 07:19:19', '2026-06-02 04:19:03'),
+(78, 2, 1, 'video', 'answered', '2026-06-02 07:19:27', NULL, '2026-06-02 04:19:23'),
+(79, 2, 1, 'video', 'ended', '2026-06-02 07:19:40', '2026-06-02 07:19:52', '2026-06-02 04:19:36'),
+(80, 2, 1, 'video', 'ended', '2026-06-02 07:20:00', '2026-06-02 07:20:14', '2026-06-02 04:20:00'),
+(81, 2, 1, 'video', 'ended', '2026-06-02 07:20:21', '2026-06-02 07:20:25', '2026-06-02 04:20:16'),
+(82, 2, 1, 'video', 'ended', '2026-06-02 07:20:41', '2026-06-02 07:20:45', '2026-06-02 04:20:36'),
+(83, 2, 1, 'video', 'ended', '2026-06-02 07:21:48', '2026-06-02 07:21:53', '2026-06-02 04:21:42'),
+(84, 2, 1, 'video', 'ended', '2026-06-02 07:23:19', '2026-06-02 07:23:24', '2026-06-02 04:23:14'),
+(85, 2, 1, 'video', 'declined', '2026-06-02 07:23:37', '2026-06-02 07:23:48', '2026-06-02 04:23:32'),
+(86, 2, 1, 'video', 'ended', '2026-06-02 07:27:40', '2026-06-02 07:27:45', '2026-06-02 04:27:34'),
+(87, 2, 1, 'video', 'ended', '2026-06-02 07:27:56', '2026-06-02 07:28:00', '2026-06-02 04:27:51'),
+(88, 2, 1, 'video', 'ended', '2026-06-02 07:29:06', '2026-06-02 07:29:10', '2026-06-02 04:29:00'),
+(89, 2, 1, 'video', 'ended', '2026-06-02 07:30:20', '2026-06-02 07:30:24', '2026-06-02 04:30:13'),
+(90, 2, 1, 'video', 'ended', '2026-06-02 07:43:14', '2026-06-02 07:43:24', '2026-06-02 04:43:07'),
+(91, 2, 1, 'video', 'declined', '2026-06-02 07:43:37', '2026-06-02 07:43:43', '2026-06-02 04:43:32'),
+(92, 2, 1, 'video', 'ended', '2026-06-02 07:43:54', '2026-06-02 07:44:03', '2026-06-02 04:43:49'),
+(93, 2, 1, 'video', 'declined', '2026-06-02 07:44:51', '2026-06-02 07:44:57', '2026-06-02 04:44:45'),
+(94, 2, 1, 'video', 'ended', '2026-06-02 07:45:08', '2026-06-02 07:45:14', '2026-06-02 04:45:02'),
+(95, 2, 1, 'video', 'ended', '2026-06-02 07:47:07', '2026-06-02 07:48:34', '2026-06-02 04:47:00'),
+(96, 2, 1, 'video', 'ended', '2026-06-02 07:51:37', '2026-06-02 07:51:45', '2026-06-02 04:51:30'),
+(97, 2, 1, 'video', 'ended', '2026-06-02 07:52:30', '2026-06-02 07:52:54', '2026-06-02 04:52:25'),
+(98, 2, 1, 'video', 'ended', '2026-06-02 07:53:02', '2026-06-02 07:53:47', '2026-06-02 04:52:58'),
+(99, 2, 1, 'video', 'ended', '2026-06-02 07:55:15', '2026-06-02 07:55:26', '2026-06-02 04:55:10'),
+(100, 2, 1, 'video', 'ended', '2026-06-02 07:58:28', '2026-06-02 07:58:34', '2026-06-02 04:57:49'),
+(101, 2, 1, 'video', 'ended', '2026-06-02 08:01:00', '2026-06-02 08:01:12', '2026-06-02 05:00:54'),
+(102, 2, 1, 'video', 'ended', '2026-06-02 08:01:59', '2026-06-02 08:02:07', '2026-06-02 05:01:53'),
+(103, 1, 2, 'video', 'answered', '2026-06-02 08:02:19', NULL, '2026-06-02 05:02:17'),
+(104, 1, 2, 'video', 'declined', '2026-06-02 08:02:36', '2026-06-02 08:02:47', '2026-06-02 05:02:33'),
+(105, 1, 2, 'video', 'ended', '2026-06-02 08:04:25', '2026-06-02 08:04:30', '2026-06-02 05:04:20'),
+(106, 1, 2, 'video', 'declined', '2026-06-02 08:05:13', '2026-06-02 08:05:20', '2026-06-02 05:05:10'),
+(107, 2, 1, 'video', 'ended', '2026-06-02 08:05:33', '2026-06-02 08:05:47', '2026-06-02 05:05:28'),
+(108, 1, 2, 'video', 'declined', '2026-06-02 08:06:04', '2026-06-02 08:06:12', '2026-06-02 05:06:01'),
+(109, 1, 2, 'video', 'ended', '2026-06-02 08:09:46', '2026-06-02 08:10:03', '2026-06-02 05:09:28'),
+(110, 1, 2, 'video', 'declined', '2026-06-02 08:10:16', '2026-06-02 08:10:32', '2026-06-02 05:10:12'),
+(111, 1, 2, 'video', 'declined', '2026-06-02 08:10:52', '2026-06-02 08:10:57', '2026-06-02 05:10:45'),
+(112, 1, 2, 'voice', 'ended', '2026-06-02 08:11:24', '2026-06-02 08:11:34', '2026-06-02 05:11:16'),
+(113, 2, 1, 'video', 'ended', '2026-06-02 08:11:51', '2026-06-02 08:11:57', '2026-06-02 05:11:42'),
+(114, 1, 2, 'video', 'answered', '2026-06-02 08:14:56', '2026-06-02 08:14:46', '2026-06-02 05:14:34'),
+(115, 1, 2, 'video', 'ended', '2026-06-02 08:15:22', '2026-06-02 08:15:33', '2026-06-02 05:15:13'),
+(116, 1, 2, 'video', 'declined', '2026-06-02 08:15:40', '2026-06-02 08:15:46', '2026-06-02 05:15:36'),
+(117, 2, 1, 'video', 'declined', '2026-06-02 08:18:07', '2026-06-02 08:18:18', '2026-06-02 05:18:07'),
+(118, 2, 1, 'voice', 'declined', '2026-06-02 08:18:24', '2026-06-02 08:18:29', '2026-06-02 05:18:20'),
+(119, 1, 2, 'video', 'ended', '2026-06-02 08:20:06', '2026-06-02 08:20:23', '2026-06-02 05:20:02'),
+(120, 1, 2, 'video', 'ended', '2026-06-02 08:20:41', '2026-06-02 08:20:54', '2026-06-02 05:20:36'),
+(121, 1, 2, 'video', 'ended', '2026-06-02 08:21:01', '2026-06-02 08:21:09', '2026-06-02 05:20:59'),
+(122, 2, 1, 'video', 'ended', '2026-06-02 08:21:33', '2026-06-02 08:21:42', '2026-06-02 05:21:29'),
+(123, 1, 2, 'video', 'ended', '2026-06-02 08:22:00', '2026-06-02 08:22:14', '2026-06-02 05:21:52'),
+(124, 1, 2, 'video', 'declined', '2026-06-02 08:22:44', '2026-06-02 08:22:50', '2026-06-02 05:22:40'),
+(125, 2, 1, 'video', 'ended', '2026-06-02 08:30:39', '2026-06-02 08:30:48', '2026-06-02 05:30:39'),
+(126, 2, 1, 'video', 'ended', '2026-06-02 08:31:03', '2026-06-02 08:31:08', '2026-06-02 05:30:56'),
+(127, 1, 2, 'video', 'ended', '2026-06-02 08:31:22', '2026-06-02 08:31:43', '2026-06-02 05:31:18'),
+(128, 1, 2, 'video', 'declined', '2026-06-02 08:31:57', '2026-06-02 08:32:15', '2026-06-02 05:31:55'),
+(129, 1, 2, 'video', 'declined', '2026-06-02 08:33:07', '2026-06-02 08:33:13', '2026-06-02 05:33:00'),
+(130, 1, 2, 'video', 'ended', '2026-06-02 08:33:28', '2026-06-02 08:33:39', '2026-06-02 05:33:22'),
+(131, 2, 1, 'video', 'ended', '2026-06-02 08:34:16', '2026-06-02 08:34:20', '2026-06-02 05:34:11'),
+(132, 2, 1, 'video', 'ended', '2026-06-02 08:34:36', '2026-06-02 08:34:40', '2026-06-02 05:34:31'),
+(133, 1, 2, 'video', 'answered', '2026-06-02 08:34:47', NULL, '2026-06-02 05:34:43'),
+(134, 1, 2, 'video', 'declined', '2026-06-02 08:36:07', '2026-06-02 08:36:13', '2026-06-02 05:35:56'),
+(135, 1, 2, 'video', 'ended', '2026-06-02 08:36:29', '2026-06-02 08:36:37', '2026-06-02 05:36:25'),
+(136, 1, 2, 'video', 'ended', '2026-06-02 08:43:29', '2026-06-02 08:43:46', '2026-06-02 05:43:23'),
+(137, 2, 1, 'video', 'answered', '2026-06-02 08:44:05', NULL, '2026-06-02 05:43:59'),
+(138, 2, 1, 'video', 'ended', '2026-06-02 08:44:25', '2026-06-02 08:44:29', '2026-06-02 05:44:21'),
+(139, 2, 1, 'video', 'ringing', '2026-06-02 23:46:26', NULL, '2026-06-02 20:46:26'),
+(140, 2, 1, 'video', 'ended', '2026-06-03 11:03:24', '2026-06-03 11:05:25', '2026-06-03 08:03:24');
 
 -- --------------------------------------------------------
 
@@ -69,7 +237,8 @@ CREATE TABLE `contacts` (
 --
 
 INSERT INTO `contacts` (`id`, `user_id`, `contact_user_id`, `created_at`) VALUES
-(1, 2, 1, '2026-05-31 22:56:17');
+(1, 2, 1, '2026-05-31 22:56:17'),
+(2, 2, 2, '2026-06-03 14:32:42');
 
 -- --------------------------------------------------------
 
@@ -89,7 +258,6 @@ CREATE TABLE `conversations` (
 --
 
 INSERT INTO `conversations` (`id`, `conversation_type`, `created_by`, `created_at`) VALUES
-(1, 'group', 2, '2026-05-31 20:02:41'),
 (2, 'group', 2, '2026-05-31 20:08:27'),
 (3, 'group', 2, '2026-05-31 20:12:47'),
 (4, 'group', 2, '2026-05-31 20:14:23'),
@@ -114,12 +282,10 @@ CREATE TABLE `conversation_participants` (
 --
 
 INSERT INTO `conversation_participants` (`id`, `conversation_id`, `user_id`, `joined_at`) VALUES
-(2, 1, 1, '2026-05-31 20:02:41'),
 (4, 2, 1, '2026-05-31 20:08:27'),
 (5, 3, 2, '2026-05-31 20:12:47'),
 (6, 3, 1, '2026-05-31 20:12:47'),
 (7, 4, 2, '2026-05-31 20:14:23'),
-(8, 4, 1, '2026-05-31 20:14:23'),
 (9, 5, 2, '2026-05-31 21:38:06'),
 (10, 5, 1, '2026-05-31 21:38:06'),
 (11, 6, 2, '2026-05-31 22:56:17'),
@@ -187,11 +353,10 @@ CREATE TABLE `groups_chat` (
 --
 
 INSERT INTO `groups_chat` (`id`, `conversation_id`, `group_name`, `group_photo`, `description`, `created_by`, `created_at`) VALUES
-(1, 1, 'Bisure', 'group_1780257761_ac681a63c7f8a983.png', 'converse in this group', 2, '2026-05-31 20:02:41'),
 (2, 2, 'Bisure222', NULL, 'another one', 2, '2026-05-31 20:08:27'),
-(3, 3, 'fff', NULL, 'iuytrewq', 2, '2026-05-31 20:12:47'),
-(4, 4, 'fff', NULL, 'rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffff', 2, '2026-05-31 20:14:23'),
-(5, 5, '2two', NULL, 'mine yudnmdvsj  nnnni n', 2, '2026-05-31 21:38:06');
+(3, 3, 'GROUP 1', 'group_3_1780364043.png', 'CODING', 2, '2026-05-31 20:12:47'),
+(4, 4, 'fff', 'group_4_1780363302.png', 'rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffff', 2, '2026-05-31 20:14:23'),
+(5, 5, '2two', 'group_5_1780364085.png', 'mine yudnmdvsj  nnnni n', 2, '2026-05-31 21:38:06');
 
 -- --------------------------------------------------------
 
@@ -212,14 +377,12 @@ CREATE TABLE `group_members` (
 --
 
 INSERT INTO `group_members` (`id`, `group_id`, `user_id`, `role`, `joined_at`) VALUES
-(2, 1, 1, 'member', '2026-05-31 20:02:41'),
 (4, 2, 1, 'admin', '2026-05-31 20:08:27'),
 (5, 3, 2, 'admin', '2026-05-31 20:12:47'),
 (6, 3, 1, 'member', '2026-05-31 20:12:47'),
 (7, 4, 2, 'admin', '2026-05-31 20:14:23'),
-(8, 4, 1, 'member', '2026-05-31 20:14:23'),
 (9, 5, 2, 'admin', '2026-05-31 21:38:06'),
-(10, 5, 1, 'member', '2026-05-31 21:38:06');
+(10, 5, 1, 'admin', '2026-05-31 21:38:06');
 
 -- --------------------------------------------------------
 
@@ -252,7 +415,7 @@ CREATE TABLE `inquiries` (
 --
 
 INSERT INTO `inquiries` (`id`, `user_id`, `user_fullname`, `user_username`, `user_email`, `user_phone`, `subject`, `message`, `status`, `priority`, `assigned_to`, `admin_response`, `responded_by`, `responded_at`, `resolved_at`, `created_at`, `updated_at`) VALUES
-(1, 2, 'isa', 'isak', 'byaruhangangaisamelk@gmail.com', '0757000001', 'Support Inquiry', 'this sysysystem', 'read', 'medium', NULL, NULL, NULL, NULL, NULL, '2026-06-01 22:58:19', '2026-06-01 23:14:24'),
+(1, 2, 'isa', 'isak', 'byaruhangangaisamelk@gmail.com', '0757000001', 'Support Inquiry', 'this sysysystem', 'replied', 'medium', NULL, 'welll', 2, '2026-06-03 17:32:42', NULL, '2026-06-01 22:58:19', '2026-06-03 14:32:42'),
 (2, 2, 'isa', 'isak', 'byaruhangangaisamelk@gmail.com', '0757000001', 'Support Inquiry', 'again ertyuiefghjkld\r\ncvbnm,dfghjkwtyui', 'replied', 'medium', NULL, 'like that', 2, '2026-06-02 02:15:44', NULL, '2026-06-01 23:07:23', '2026-06-01 23:15:44'),
 (3, 2, 'isa', 'isak', 'byaruhangangaisamelk@gmail.com', '0757000001', 'Support Inquiry', 'wertyuioasdfghjklzxcvbnm', 'replied', 'medium', NULL, 'wertyuiop', 2, '2026-06-02 02:41:56', NULL, '2026-06-01 23:40:31', '2026-06-01 23:41:56');
 
@@ -281,7 +444,7 @@ CREATE TABLE `messages` (
 --
 
 INSERT INTO `messages` (`id`, `conversation_id`, `sender_id`, `message_type`, `message_text`, `reply_to_id`, `attachment_path`, `is_edited`, `is_deleted`, `created_at`, `updated_at`) VALUES
-(1, 4, 2, 'text', 'iiiiii', NULL, NULL, 0, 0, '2026-05-31 20:55:28', NULL),
+(1, 4, 2, 'text', 'iiiiii', NULL, NULL, 0, 1, '2026-05-31 20:55:28', NULL),
 (2, 4, 2, 'text', 'fffff', NULL, NULL, 0, 0, '2026-05-31 20:58:50', NULL),
 (3, 4, 2, 'text', 'rrrrrrr', NULL, NULL, 0, 0, '2026-05-31 21:04:00', NULL),
 (4, 4, 2, 'text', 'rtyuiop', NULL, NULL, 0, 0, '2026-05-31 21:11:49', NULL),
@@ -304,7 +467,7 @@ INSERT INTO `messages` (`id`, `conversation_id`, `sender_id`, `message_type`, `m
 (21, 6, 1, 'text', 'How are you', NULL, NULL, 0, 0, '2026-06-01 18:39:41', NULL),
 (22, 6, 1, 'text', 'Yess', NULL, NULL, 0, 0, '2026-06-01 18:40:22', NULL),
 (23, 6, 2, 'text', 'hello', NULL, NULL, 0, 0, '2026-06-01 20:04:58', NULL),
-(24, 6, 2, 'text', 'hello', NULL, NULL, 0, 0, '2026-06-01 20:08:00', NULL),
+(24, 6, 2, 'text', 'hello', NULL, NULL, 0, 1, '2026-06-01 20:08:00', NULL),
 (25, 6, 2, 'text', 'welll go', 11, NULL, 0, 0, '2026-06-01 20:09:43', NULL),
 (26, 6, 1, 'text', 'Well now', NULL, NULL, 0, 0, '2026-06-01 20:15:17', NULL),
 (27, 3, 2, 'text', 'heloooo', NULL, NULL, 0, 0, '2026-06-01 20:51:01', NULL),
@@ -318,7 +481,9 @@ INSERT INTO `messages` (`id`, `conversation_id`, `sender_id`, `message_type`, `m
 (35, 6, 2, 'text', '✅ **INQUIRY RESPONSE #2**\n\n━━━━━━━━━━━━━━━━━━━━━━\n👤 **From:** Support Team\n📅 **Date:** June 2, 2026 at 1:15 AM\n🏷️ **Status:** Replied\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 **Response:**\nlike that\n\n━━━━━━━━━━━━━━━━━━━━━━\n📋 _This is a response to your inquiry. Reply here if you need further assistance._', NULL, NULL, 0, 0, '2026-06-01 23:15:44', NULL),
 (36, 6, 2, 'text', '🔔 **NEW SUPPORT INQUIRY**\n\n━━━━━━━━━━━━━━━━━━━━━━\n🆔 **Inquiry ID:** #3\n👤 **From:** isa (@isak)\n📧 **Email:** byaruhangangaisamelk@gmail.com\n📱 **Phone:** 0757000001\n📅 **Submitted:** June 2, 2026 at 1:40 AM\n🏷️ **Status:** ⚠️ Pending\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 **Message Preview:**\nwertyuioasdfghjklzxcvbnm\n\n━━━━━━━━━━━━━━━━━━━━━━\n🔗 **View full inquiry:** inquiries?view=3\n📋 _Use the Admin Panel to manage this inquiry_', NULL, NULL, 0, 0, '2026-06-01 23:40:31', NULL),
 (37, 6, 2, 'text', '✅ **INQUIRY SUBMITTED**\n\n━━━━━━━━━━━━━━━━━━━━━━\n🆔 **Inquiry ID:** #3\n📅 **Submitted:** June 2, 2026 at 1:40 AM\n🏷️ **Status:** Pending Review\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 **Your Message:**\nwertyuioasdfghjklzxcvbnm\n\n━━━━━━━━━━━━━━━━━━━━━━\n📋 Our team will review your inquiry and respond shortly.\n🔗 Reference: #3', NULL, NULL, 0, 0, '2026-06-01 23:40:31', NULL),
-(38, 6, 2, 'text', '✅ **INQUIRY RESPONSE #3**\n\n━━━━━━━━━━━━━━━━━━━━━━\n👤 **From:** Support Team\n📅 **Date:** June 2, 2026 at 1:41 AM\n🏷️ **Status:** Replied\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 **Response:**\nwertyuiop\n\n━━━━━━━━━━━━━━━━━━━━━━\n📋 _This is a response to your inquiry. Reply here if you need further assistance._', NULL, NULL, 0, 0, '2026-06-01 23:41:56', NULL);
+(38, 6, 2, 'text', '✅ **INQUIRY RESPONSE #3**\n\n━━━━━━━━━━━━━━━━━━━━━━\n👤 **From:** Support Team\n📅 **Date:** June 2, 2026 at 1:41 AM\n🏷️ **Status:** Replied\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 **Response:**\nwertyuiop\n\n━━━━━━━━━━━━━━━━━━━━━━\n📋 _This is a response to your inquiry. Reply here if you need further assistance._', NULL, NULL, 0, 0, '2026-06-01 23:41:56', NULL),
+(39, 6, 2, 'text', '✅ **INQUIRY RESPONSE #1**\n\n━━━━━━━━━━━━━━━━━━━━━━\n👤 **From:** Support Team\n📅 **Date:** June 3, 2026 at 4:32 PM\n🏷️ **Status:** Replied\n━━━━━━━━━━━━━━━━━━━━━━\n\n💬 **Response:**\nwelll\n\n━━━━━━━━━━━━━━━━━━━━━━\n📋 _This is a response to your inquiry. Reply here if you need further assistance._', NULL, NULL, 0, 0, '2026-06-03 14:32:42', NULL),
+(40, 4, 2, 'text', 'dddd', NULL, NULL, 0, 0, '2026-06-03 15:26:14', NULL);
 
 -- --------------------------------------------------------
 
@@ -379,7 +544,10 @@ INSERT INTO `message_reads` (`id`, `message_id`, `user_id`, `read_at`) VALUES
 (32, 32, 1, '2026-06-01 23:18:23'),
 (33, 33, 1, '2026-06-01 23:18:23'),
 (34, 34, 1, '2026-06-01 23:18:23'),
-(35, 35, 1, '2026-06-01 23:18:23');
+(35, 35, 1, '2026-06-01 23:18:23'),
+(37, 36, 1, '2026-06-02 04:30:05'),
+(38, 37, 1, '2026-06-02 04:30:05'),
+(39, 38, 1, '2026-06-02 04:30:05');
 
 -- --------------------------------------------------------
 
@@ -401,7 +569,14 @@ CREATE TABLE `password_resets` (
 --
 
 INSERT INTO `password_resets` (`id`, `user_id`, `reset_token`, `expires_at`, `used_at`, `created_at`) VALUES
-(1, 1, '7383424f991e18b63f70cfc3af53b80d7c4a7dcc8e9d76ed7b8311e58e2bef39', '2026-06-01 03:31:03', NULL, '2026-06-01 00:16:03');
+(1, 1, '7383424f991e18b63f70cfc3af53b80d7c4a7dcc8e9d76ed7b8311e58e2bef39', '2026-06-01 03:31:03', '2026-06-04 01:57:45', '2026-06-01 00:16:03'),
+(2, 2, 'd5f1c6a0e20ffbd87045dfbcfcaf8c887a76a7c2b420f348b6e8463d8a6b0218', '2026-06-04 02:12:45', NULL, '2026-06-03 22:57:45'),
+(3, 2, '8fc22c62429a458653a5af7a5f5450e9ca068033914ac91d2f5fd11cb6898179', '2026-06-04 02:16:10', NULL, '2026-06-03 23:01:10'),
+(4, 2, 'e63fd32de3817a6e580aa3a99bcf6e21d4291feafb5bd09f927197ba7ef5002b', '2026-06-04 02:16:27', NULL, '2026-06-03 23:01:27'),
+(5, 1, '7fa68222db36dac107fc23be6d541c185ae9494e3a9f2a2bfc71ad77239704ee', '2026-06-04 02:20:39', NULL, '2026-06-03 23:05:39'),
+(6, 1, 'c9bf77fb68f80508ea56457659fb53a850dd91f708c2455e4ce8fe3534970f69', '2026-06-04 02:20:56', NULL, '2026-06-03 23:05:56'),
+(7, 1, '51790ea9ecd9ba1838afdbaee88d2be2c9294921a931f053820d3c508ca20a41', '2026-06-04 02:21:23', NULL, '2026-06-03 23:06:23'),
+(8, 1, 'a1234f7884e04774f86301216d5445d314df84652ddbf5ddfc4d51271b473800', '2026-06-04 02:21:47', '2026-06-04 02:11:01', '2026-06-03 23:06:47');
 
 -- --------------------------------------------------------
 
@@ -421,6 +596,7 @@ CREATE TABLE `users` (
   `bio` varchar(255) DEFAULT NULL,
   `status_message` varchar(255) DEFAULT 'Available',
   `role` enum('normal','admin') NOT NULL DEFAULT 'normal',
+  `auth` varchar(5) NOT NULL DEFAULT 'yes',
   `is_verified` tinyint(1) DEFAULT 0,
   `is_online` tinyint(1) DEFAULT 0,
   `last_seen` datetime DEFAULT NULL,
@@ -432,9 +608,9 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `uuid`, `fullname`, `username`, `email`, `phone`, `password_hash`, `profile_photo`, `bio`, `status_message`, `role`, `is_verified`, `is_online`, `last_seen`, `created_at`, `updated_at`) VALUES
-(1, 'e659b716-462e-4bc8-8588-abe91e1b7387', 'Anthelem', 'anthelem', 'isamel.sparrow@gmail.com', '0757000000', '$2y$12$8MzRGViFBIG/0S6JLP.2Gu9NBXStovA26rGGgKQex0EnugTXR6gcO', NULL, NULL, 'Available', 'normal', 0, 1, '2026-06-02 02:17:54', '2026-05-31 19:09:22', '2026-06-01 23:17:54'),
-(2, '8ef445a0-932f-492f-8228-bf1f2058f6ed', 'isa', 'isak', 'byaruhangangaisamelk@gmail.com', '0757000001', '$2y$12$odnKWzmH5Z.mydIe6am/N.0eo0UVkBIvFSoJKQDVFC.iT4s9vJC/O', 'profile_2_1780270896.png', 'its my time', 'God knows', 'admin', 0, 1, '2026-06-02 00:48:31', '2026-05-31 19:09:52', '2026-06-01 22:31:08');
+INSERT INTO `users` (`id`, `uuid`, `fullname`, `username`, `email`, `phone`, `password_hash`, `profile_photo`, `bio`, `status_message`, `role`, `auth`, `is_verified`, `is_online`, `last_seen`, `created_at`, `updated_at`) VALUES
+(1, 'e659b716-462e-4bc8-8588-abe91e1b7387', 'Anthelem', 'anthelem', 'isamel.sparrow@gmail.com', '0757000000', '$2y$10$DgoJwZ4f7/8YGAtRVh0P5O7neD8R7SEeXr85Lb8DElLopKfMc3K.O', 'profile_1_1780361566.png', 'update Bio', 'Available', 'admin', 'no', 0, 1, '2026-06-03 19:11:14', '2026-05-31 19:09:22', '2026-06-03 23:11:01'),
+(2, '8ef445a0-932f-492f-8228-bf1f2058f6ed', 'isamel', 'isak', 'byaruhangangaisamelk@gmail.com', '0757000001', '$2y$12$odnKWzmH5Z.mydIe6am/N.0eo0UVkBIvFSoJKQDVFC.iT4s9vJC/O', 'profile_2_1780359508.png', 'its my time', 'God knows', 'admin', 'yes', 0, 1, '2026-06-04 00:23:58', '2026-05-31 19:09:52', '2026-06-03 21:23:58');
 
 -- --------------------------------------------------------
 
@@ -470,6 +646,14 @@ ALTER TABLE `archived_chats`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `conversation_id` (`conversation_id`);
+
+--
+-- Indexes for table `block_reasons`
+--
+ALTER TABLE `block_reasons`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `blocked_by` (`blocked_by`);
 
 --
 -- Indexes for table `calls`
@@ -604,16 +788,22 @@ ALTER TABLE `archived_chats`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `block_reasons`
+--
+ALTER TABLE `block_reasons`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `calls`
 --
 ALTER TABLE `calls`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
 
 --
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `conversations`
@@ -661,7 +851,7 @@ ALTER TABLE `inquiries`
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `message_reactions`
@@ -673,13 +863,13 @@ ALTER TABLE `message_reactions`
 -- AUTO_INCREMENT for table `message_reads`
 --
 ALTER TABLE `message_reads`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `password_resets`
 --
 ALTER TABLE `password_resets`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -703,6 +893,13 @@ ALTER TABLE `user_settings`
 ALTER TABLE `archived_chats`
   ADD CONSTRAINT `archived_chats_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `archived_chats_ibfk_2` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `block_reasons`
+--
+ALTER TABLE `block_reasons`
+  ADD CONSTRAINT `block_reasons_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `block_reasons_ibfk_2` FOREIGN KEY (`blocked_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `calls`

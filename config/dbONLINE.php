@@ -6,9 +6,9 @@ define("MY_URL", "https://bisurechat.22web.org");
 date_default_timezone_set('Africa/Kampala');
 
 // Database credentials
-$host = 'sql113.byetcluster.com';  // Use your correct MySQL host from ByetHost panel
+$host = 'sql113.byetcluster.com'; 
 $user = 'b13_39257326';
-$pass = 'Bi0757003628';  // 🔐 Consider changing this in production
+$pass = 'Bi0757003628';  
 $db   = 'b13_39257326_bisurechat_db';
 
 // Connect to MySQL
@@ -21,4 +21,5 @@ if ($conn->connect_error) {
 
     // Set MySQL session timezone to East Africa Time
     $conn->query("SET time_zone = '+03:00';");
-    ?>
+
+?>

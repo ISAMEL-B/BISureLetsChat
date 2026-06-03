@@ -51,20 +51,15 @@ $sidebar_display_name = $sidebar_user_data['fullname'] ?? $sidebar_user_data['us
     <meta name="google" content="notranslate">
     <meta name="format-detection" content="telephone=no">
 
-    <!-- =============================================
-         PWA META TAGS - UPDATED FOR SUBFOLDER
-         ============================================= -->
-    <!-- <link rel="manifest" href="/bisureletschat/manifest.json" crossorigin="use-credentials">
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0d6efd">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BISURE Chat">
-    <link rel="apple-touch-icon" href="/bisureletschat/assets/icons/icon-192x192.png">
-    <meta name="msapplication-TileImage" content="/bisureletschat/assets/icons/icon-144x144.png">
-    <meta name="msapplication-TileColor" content="#0d6efd"> -->
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192x192.png">
     
-    <title>BISURE Chat</title>
+    <title>Hamburger Menu</title>
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -341,32 +336,30 @@ $sidebar_display_name = $sidebar_user_data['fullname'] ?? $sidebar_user_data['us
             margin: 8px 20px;
         }
 
-        /* =============================================
-           INSTALL BUTTON - HIGHLIGHTED
-           ============================================= */
+        /* Install App Button */
         #bscInstallApp {
-            background: linear-gradient(135deg, #0d6efd, #0056b3) !important;
+            background: linear-gradient(135deg, #128C7E, #075E54) !important;
             color: white !important;
             border-radius: 8px;
             margin: 8px 12px;
-            font-weight: 600;
+            transition: all 0.3s ease;
             border-left: none !important;
             animation: bscPulseInstall 2s ease-in-out infinite;
         }
 
         @keyframes bscPulseInstall {
             0%, 100% {
-                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.4);
+                box-shadow: 0 0 0 0 rgba(18, 140, 126, 0.4);
             }
             50% {
-                box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
+                box-shadow: 0 0 0 8px rgba(18, 140, 126, 0);
             }
         }
 
         #bscInstallApp:hover {
-            background: linear-gradient(135deg, #0056b3, #003d80) !important;
+            background: linear-gradient(135deg, #075E54, #128C7E) !important;
             transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+            box-shadow: 0 4px 12px rgba(18, 140, 126, 0.3);
             animation: none;
         }
 
@@ -374,9 +367,14 @@ $sidebar_display_name = $sidebar_user_data['fullname'] ?? $sidebar_user_data['us
             color: white !important;
         }
 
+        #bscInstallApp .bsc-menu-text {
+            font-weight: 600;
+        }
+
         #bscInstallApp .bsc-menu-badge {
-            background: rgba(255, 255, 255, 0.3) !important;
-            color: white !important;
+            background: rgba(255, 255, 255, 0.3);
+            font-size: 10px;
+            padding: 2px 6px;
         }
 
         /* Logout item */
@@ -471,11 +469,11 @@ $sidebar_display_name = $sidebar_user_data['fullname'] ?? $sidebar_user_data['us
         }
 
         body.dark-mode #bscInstallApp {
-            background: linear-gradient(135deg, #0d6efd, #0056b3) !important;
+            background: linear-gradient(135deg, #25D366, #128C7E) !important;
         }
 
         body.dark-mode #bscInstallApp:hover {
-            background: linear-gradient(135deg, #0056b3, #003d80) !important;
+            background: linear-gradient(135deg, #128C7E, #25D366) !important;
         }
 
         /* =============================================
@@ -612,15 +610,6 @@ $sidebar_display_name = $sidebar_user_data['fullname'] ?? $sidebar_user_data['us
 
         <div class="bsc-sidebar-divider"></div>
 
-        <!-- INSTALL APP BUTTON -->
-        <li id="bscInstallApp" onclick="handleInstallClick(event)" style="display:none;">
-            <i class="fas fa-download"></i>
-            <span class="bsc-menu-text">Install BISURE Chat</span>
-            <span class="bsc-menu-badge">NEW</span>
-        </li>
-
-        <div class="bsc-sidebar-divider"></div>
-
         <li onclick="bscGoTo('/settings/my_profile')">
             <i class="fas fa-user-circle"></i>
             <span class="bsc-menu-text">Profile</span>
@@ -629,6 +618,15 @@ $sidebar_display_name = $sidebar_user_data['fullname'] ?? $sidebar_user_data['us
         <li onclick="bscGoTo('/settings/settings')">
             <i class="fas fa-cog"></i>
             <span class="bsc-menu-text">Settings</span>
+        </li>
+
+        <div class="bsc-sidebar-divider"></div>
+
+        <!-- Install App Button (Dynamic) -->
+        <li id="bscInstallApp" style="display:none;">
+            <i class="fas fa-download"></i>
+            <span class="bsc-menu-text">Install BISURE Chat</span>
+            <span class="bsc-menu-badge">New</span>
         </li>
 
         <div class="bsc-sidebar-divider"></div>
@@ -659,7 +657,7 @@ $sidebar_display_name = $sidebar_user_data['fullname'] ?? $sidebar_user_data['us
             <span class="bsc-menu-text">Admin Chat Help</span>
         </li>
         <?php endif; ?>
-
+        
         <li onclick="bscGoTo('/auth/logout.php')" class="bsc-logout-item">
             <i class="fas fa-sign-out-alt"></i>
             <span class="bsc-menu-text">Logout</span>
@@ -680,7 +678,7 @@ $sidebar_display_name = $sidebar_user_data['fullname'] ?? $sidebar_user_data['us
         // =========================
         const projectFolder = window.location.pathname
             .split('/')
-            .slice(0, 2)
+            .slice(0, 1)
             .join('/');
 
         const baseUrl = window.location.origin + projectFolder;
@@ -806,156 +804,399 @@ $sidebar_display_name = $sidebar_user_data['fullname'] ?? $sidebar_user_data['us
         }, { passive: false });
 
     })();
-
-    // ============================================
-    // PWA INSTALL HANDLER
-    // ============================================
     
-    // Register Service Worker - Updated for subfolder
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/bisureletschat/service-worker.js', {
-                scope: '/bisureletschat/'
-            })
-            .then(function(registration) {
-                console.log('✅ ServiceWorker registered with scope:', registration.scope);
-            })
-            .catch(function(err) {
-                console.log('❌ ServiceWorker registration failed:', err);
-            });
-        });
-    }
+    // ============================================
+    // BISURE CHAT PWA INSTALL + SERVICE WORKER
+    // ============================================
 
-    let deferredPrompt;
-
-    // Check if app is already installed
-    function isAppInstalled() {
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            return true;
-        }
-        if (window.navigator.standalone === true) {
-            return true;
-        }
-        return false;
-    }
-
-    // Show/hide install button
-    function updateInstallButton() {
-        const installBtn = document.getElementById('bscInstallApp');
-        if (!installBtn) return;
-        
-        if (isAppInstalled()) {
-            installBtn.style.display = 'none';
-            console.log('✅ App already installed - hiding install button');
-        } else {
-            installBtn.style.display = 'flex';
-            console.log('📱 Showing install button');
-        }
-    }
-
-    // Capture the install prompt
-    window.addEventListener('beforeinstallprompt', function(e) {
-        console.log('✅ beforeinstallprompt fired!');
-        // Prevent Chrome 67+ from automatically showing the prompt
-        e.preventDefault();
-        // Store the event for later use
-        deferredPrompt = e;
-        // Show the install button
-        updateInstallButton();
-    });
-
-    // Handle successful installation
-    window.addEventListener('appinstalled', function() {
-        console.log('✅ BISURE Chat was installed successfully');
-        deferredPrompt = null;
-        const installBtn = document.getElementById('bscInstallApp');
-        if (installBtn) {
-            installBtn.style.display = 'none';
-        }
-    });
-
-    // Handle install button click
-    window.handleInstallClick = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
+    (() => {
+        let deferredPrompt = null;
         const installBtn = document.getElementById('bscInstallApp');
         
-        if (deferredPrompt) {
-            // Show the browser install prompt
-            deferredPrompt.prompt();
-            
-            // Wait for user choice
-            deferredPrompt.userChoice.then(function(choiceResult) {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('✅ User accepted the install prompt');
-                    installBtn.style.display = 'none';
-                } else {
-                    console.log('❌ User dismissed the install prompt');
-                }
-                deferredPrompt = null;
-            });
-        } else {
-            // Fallback: Show manual instructions
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            const isAndroid = /Android/.test(navigator.userAgent);
-            const isDesktop = !isIOS && !isAndroid && !/Mobile|Tablet/.test(navigator.userAgent);
-            
+        if (!installBtn) {
+            console.warn('Install button not found');
+            return;
+        }
+
+        // Hide initially
+        installBtn.style.display = 'none';
+        
+        // Detect platform
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isAndroid = /Android/.test(navigator.userAgent);
+        const isDesktop = !isIOS && !isAndroid && !/Mobile|Tablet/.test(navigator.userAgent);
+
+        // Check if already installed
+        function isInstalled() {
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                return true;
+            }
+            if (window.navigator.standalone === true) {
+                return true;
+            }
+            // Check if launched from home screen on Android
+            if (document.referrer.includes('android-app://')) {
+                return true;
+            }
+            return false;
+        }
+
+        // Register Service Worker
+        async function registerServiceWorker() {
+            if (!('serviceWorker' in navigator)) {
+                console.warn('Service Worker not supported');
+                return null;
+            }
+
+            try {
+                const registration = await navigator.serviceWorker.register('/service-worker.js', {
+                    scope: '/'
+                });
+                console.log('✅ Service Worker Registered:', registration.scope);
+                
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('New service worker available');
+                        }
+                    });
+                });
+                
+                return registration;
+            } catch (error) {
+                console.error('❌ Service Worker Registration Failed:', error);
+                return null;
+            }
+        }
+
+        // Show install instructions based on platform
+        function showInstallInstructions() {
             let message = '';
+            let title = '📱 Install BISURE Chat';
             
             if (isDesktop) {
-                message = '📱 Install BISURE Chat\n\n' +
-                         'Option 1 (Recommended):\n' +
-                         'Look for the Install icon (⊕) in your address bar\n\n' +
-                         'Option 2:\n' +
-                         'Click the 3-dot menu (⋮) → Cast, save and share\n' +
-                         '→ Install page as app\n\n' +
-                         'This installs BISURE Chat as a desktop app!';
+                message = 'To install BISURE Chat on your computer:\n\n' +
+                         'Chrome/Edge:\n' +
+                         '• Click the Install icon (⊕) in the address bar\n' +
+                         '• Or click ⋮ menu → "Install BISURE Chat..."\n\n' +
+                         'Firefox:\n' +
+                         '• Click the ⊕ icon in the address bar\n\n' +
+                         'Safari:\n' +
+                         '• File → Add to Dock';
             } else if (isAndroid) {
-                message = '📱 Install BISURE Chat\n\n' +
-                         'Option 1:\n' +
-                         'Tap the 3-dot menu (⋮) → "Install app"\n\n' +
-                         'Option 2:\n' +
-                         'Look for "Install" at the bottom of your screen\n\n' +
-                         'This adds BISURE Chat to your home screen!';
+                message = 'To install BISURE Chat on your Android:\n\n' +
+                         'Chrome:\n' +
+                         '• Tap ⋮ menu → "Install app"\n\n' +
+                         'Samsung Internet:\n' +
+                         '• Tap ☰ menu → "Add page to" → "Home screen"\n\n' +
+                         'Firefox:\n' +
+                         '• Tap ⋮ menu → "Install"';
             } else if (isIOS) {
-                message = '📱 Install BISURE Chat\n\n' +
-                         'In Safari:\n' +
-                         '1. Tap the Share button (📤)\n' +
-                         '2. Scroll down → "Add to Home Screen"\n' +
-                         '3. Tap "Add" in the top right\n\n' +
-                         'This adds BISURE Chat to your home screen!';
+                message = 'To install BISURE Chat on your iPhone/iPad:\n\n' +
+                         'Safari:\n' +
+                         '• Tap the Share button (📤)\n' +
+                         '• Scroll down and tap "Add to Home Screen"\n' +
+                         '• Tap "Add" in the top right corner\n\n' +
+                         'The app will appear on your home screen!';
             }
             
             if (message) {
-                alert(message);
+                // Create a styled dialog instead of alert
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.8);
+                    z-index: 99999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                `;
+                
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    border-radius: 16px;
+                    padding: 24px;
+                    max-width: 400px;
+                    width: 100%;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    animation: slideUp 0.3s ease-out;
+                `;
+                
+                dialog.innerHTML = `
+                    <style>
+                        @keyframes slideUp {
+                            from {
+                                opacity: 0;
+                                transform: translateY(20px);
+                            }
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+                    </style>
+                    <div style="text-align: center; font-size: 40px; margin-bottom: 16px;">📱</div>
+                    <h3 style="margin: 0 0 16px 0; font-size: 18px; color: #333;">Install BISURE Chat</h3>
+                    <div style="white-space: pre-line; color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">${message}</div>
+                    <button style="
+                        width: 100%;
+                        padding: 12px;
+                        background: #128C7E;
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        cursor: pointer;
+                    ">Got it!</button>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                // Close on button click
+                dialog.querySelector('button').addEventListener('click', () => {
+                    overlay.remove();
+                });
+                
+                // Close on overlay click
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.remove();
+                    }
+                });
             }
         }
-    };
 
-    // Initialize on page load
-    window.addEventListener('load', function() {
-        // Check if already installed
-        if (isAppInstalled()) {
-            console.log('✅ Running as installed PWA');
-            const installBtn = document.getElementById('bscInstallApp');
-            if (installBtn) {
+        // Handle install button click
+        installBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent sidebar from closing
+            
+            // For Chrome/Edge with beforeinstallprompt
+            if (deferredPrompt) {
+                try {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    
+                    console.log(`User response to install prompt: ${outcome}`);
+                    
+                    if (outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        installBtn.style.display = 'none';
+                    } else {
+                        console.log('User dismissed the install prompt');
+                        // Show manual instructions as fallback
+                        setTimeout(() => showInstallInstructions(), 500);
+                    }
+                    
+                    deferredPrompt = null;
+                    return;
+                } catch (err) {
+                    console.error('Install prompt failed:', err);
+                }
+            }
+            
+            // For other browsers/platforms, show instructions
+            showInstallInstructions();
+        });
+
+        // Capture beforeinstallprompt event (Chrome/Edge)
+        window.addEventListener('beforeinstallprompt', (event) => {
+            console.log('✅ beforeinstallprompt event fired');
+            
+            // Prevent the default mini-infobar from appearing
+            event.preventDefault();
+            
+            // Store the event for later use
+            deferredPrompt = event;
+            
+            // Show the install button
+            if (!isInstalled()) {
+                updateInstallButton();
+                console.log('Install button shown (beforeinstallprompt)');
+            }
+        });
+
+        // Handle successful installation
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ BISURE Chat was installed successfully');
+            deferredPrompt = null;
+            installBtn.style.display = 'none';
+            
+            // Show success message
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #128C7E;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                z-index: 99999;
+                font-weight: 600;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                animation: slideDown 0.3s ease-out;
+            `;
+            successDiv.innerHTML = '✅ App installed successfully!';
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.style.animation = 'slideUp 0.3s ease-in forwards';
+                setTimeout(() => successDiv.remove(), 300);
+            }, 3000);
+        });
+
+        // Update install button text and icon based on platform
+        function updateInstallButton() {
+            const icon = installBtn.querySelector('i');
+            const text = installBtn.querySelector('.bsc-menu-text');
+            const badge = installBtn.querySelector('.bsc-menu-badge');
+            
+            if (icon) {
+                if (isDesktop) {
+                    icon.className = 'fas fa-desktop';
+                } else if (isAndroid) {
+                    icon.className = 'fas fa-android';
+                } else if (isIOS) {
+                    icon.className = 'fas fa-apple';
+                } else {
+                    icon.className = 'fas fa-download';
+                }
+            }
+            
+            if (text) {
+                if (isDesktop) {
+                    text.textContent = 'Install Desktop App';
+                } else if (isAndroid) {
+                    text.textContent = 'Install Android App';
+                } else if (isIOS) {
+                    text.textContent = 'Add to Home Screen';
+                } else {
+                    text.textContent = 'Install BISURE Chat';
+                }
+            }
+            
+            if (badge) {
+                badge.textContent = 'Free';
+            }
+        }
+
+        // Handle display mode changes (detect if app was installed externally)
+        const displayModeQuery = window.matchMedia('(display-mode: standalone)');
+        displayModeQuery.addEventListener('change', (evt) => {
+            if (evt.matches) {
+                console.log('App launched in standalone mode');
                 installBtn.style.display = 'none';
             }
-            return;
-        }
-        
-        // Show button after a delay (for Chrome engagement check)
-        setTimeout(function() {
+        });
+
+        // Initialize on page load
+        window.addEventListener('load', async () => {
+            // Register service worker first
+            const registration = await registerServiceWorker();
+            
+            if (!registration) {
+                console.warn('Cannot register service worker - install features disabled');
+                return;
+            }
+            
+            // Check if already installed
+            if (isInstalled()) {
+                console.log('✅ App is already installed (standalone mode)');
+                installBtn.style.display = 'none';
+                return;
+            }
+            
+            // Update button appearance
             updateInstallButton();
-        }, 2000);
-        
-        // Show button immediately if prompt is already available
-        if (deferredPrompt) {
-            updateInstallButton();
+            
+            // Show install button for platforms that support it
+            if (isDesktop || isAndroid || isIOS || deferredPrompt) {
+                console.log(`Showing install button for ${isDesktop ? 'Desktop' : isAndroid ? 'Android' : isIOS ? 'iOS' : 'other platform'}`);
+                installBtn.style.display = 'flex';
+            }
+        });
+
+        // Check for standalone mode immediately (before load event)
+        if (isInstalled()) {
+            console.log('App is already installed, hiding install button');
+            installBtn.style.display = 'none';
         }
-    });
+
+        // Handle service worker updates
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('Service Worker updated, reloading...');
+                // Optionally show update notification
+                const updateDiv = document.createElement('div');
+                updateDiv.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #0d6efd;
+                    color: white;
+                    padding: 16px 24px;
+                    border-radius: 12px;
+                    z-index: 99999;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                    animation: slideUp 0.3s ease-out;
+                    text-align: center;
+                `;
+                updateDiv.innerHTML = `
+                    <div style="margin-bottom: 8px;">🔄 New version available!</div>
+                    <button style="
+                        background: white;
+                        color: #0d6efd;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        margin-top: 8px;
+                    ">Update Now</button>
+                `;
+                
+                document.body.appendChild(updateDiv);
+                
+                updateDiv.querySelector('button').addEventListener('click', () => {
+                    window.location.reload();
+                });
+                
+                setTimeout(() => {
+                    updateDiv.style.animation = 'slideDown 0.3s ease-in forwards';
+                    setTimeout(() => updateDiv.remove(), 300);
+                }, 10000);
+            });
+        }
+
+        // Add CSS animations for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideDown {
+                from { transform: translateX(-50%) translateY(0); opacity: 1; }
+                to { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            }
+            @keyframes slideUp {
+                from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+    })();
 
 </script>
 
