@@ -9,10 +9,11 @@
 date_default_timezone_set('Africa/Kampala');
 
 // Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+//error_reporting(E_ALL);
+//ini_set('display_errors', 1);
 
-session_start();
+//session_start();
+require_once __DIR__ . '/../includes/auth_check.php';
 
 // Check dark mode preference
 $darkMode = isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'enabled';
@@ -49,6 +50,9 @@ $result = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Create Group | BisureChat</title>
     <link rel="icon" href="../../favicon.png" type="image/x-icon">
+    
+     <!-- PWA Meta Tags -->
+    <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/bisurechat/install_pwa_head_tags.php'; ?>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

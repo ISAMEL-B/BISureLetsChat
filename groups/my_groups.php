@@ -89,8 +89,10 @@ $stmt->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Groups | BisureChat</title>
-    <link rel="icon" href="../../favicon.png" type="image/x-icon">
-
+    
+ 	<!-- PWA Meta Tags -->
+    <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/bisurechat/install_pwa_head_tags.php'; ?>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -666,7 +668,7 @@ $stmt->close();
         let currentImageUrl = '';
 
         function openGroup(groupId) {
-            window.location.href = `group_chat?group_id=${groupId}`;
+            window.location.href = `group_cht?group_id=${groupId}`;
         }
 
         function previewGroupImage(groupId, groupName, imageUrl) {

@@ -66,11 +66,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $_SESSION['reset_attempt_time'] = time();
                     }
                     
-                    if ($_SESSION['reset_attempts'] > 100) {
+                    if ($_SESSION['reset_attempts'] > 5) {
                         $error = "Too many reset attempts. Please try again later.";
                     } else {
                         // Create reset link instead of code
-                        $reset_link = "https://" . $_SERVER['HTTP_HOST'] . "bisureletschat/auth/forgot/reset-password.php?token=" . $reset_token;
+                        $reset_link = "https://" . $_SERVER['HTTP_HOST'] . "/auth/forgot/reset_password.php?token=" . $reset_token;
                         
                         // Send email
                         $mail = new PHPMailer(true);
@@ -578,7 +578,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             
             <div class="auth-body">
-                <a href="login.php" class="back-link">
+                <a href="../register.php" class="back-link">
                     <i class="fas fa-arrow-left"></i> Back to login
                 </a>
                 
@@ -642,7 +642,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </div>
             <p class="footer-help">
-                Need help? Contact <a href="mailto:support@bisurechat.org">support@bisurechat.org</a>
+                Need help? Contact <a href="mailto:byaruhangaisamelk@gmail.org">support@bisurechat.org</a>
             </p>
             <div class="footer-copyright">
                 © <?php echo date('Y'); ?> BisureChat. All rights reserved.

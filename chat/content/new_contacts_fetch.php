@@ -32,7 +32,7 @@ try {
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
     $offset = ($page - 1) * $limit;
     
-    // Fetch ALL users except current user, with their details
+    // Fetch ALL users INCLUDING current user, with their details
     $query = "
         SELECT 
             u.id,
@@ -45,27 +45,37 @@ try {
             u.is_online,
             u.last_seen,
             u.created_at,
-            -- Check if conversation already exists
-            (
-                SELECT c.id 
-                FROM conversations c
-                INNER JOIN conversation_participants cp1 ON c.id = cp1.conversation_id AND cp1.user_id = ?
-                INNER JOIN conversation_participants cp2 ON c.id = cp2.conversation_id AND cp2.user_id = u.id
-                WHERE c.conversation_type = 'private'
-                LIMIT 1
-            ) as existing_conversation_id,
-            -- Check if in contacts
-            (
-                SELECT COUNT(*) 
-                FROM contacts 
-                WHERE user_id = ? AND contact_user_id = u.id
-            ) as is_in_contacts
+            -- Check if conversation already exists (exclude self-conversation)
+            CASE 
+                WHEN u.id != ? THEN
+                    (
+                        SELECT c.id 
+                        FROM conversations c
+                        INNER JOIN conversation_participants cp1 ON c.id = cp1.conversation_id AND cp1.user_id = ?
+                        INNER JOIN conversation_participants cp2 ON c.id = cp2.conversation_id AND cp2.user_id = u.id
+                        WHERE c.conversation_type = 'private'
+                        LIMIT 1
+                    )
+                ELSE NULL
+            END as existing_conversation_id,
+            -- Check if in contacts (exclude self)
+            CASE 
+                WHEN u.id != ? THEN
+                    (
+                        SELECT COUNT(*) 
+                        FROM contacts 
+                        WHERE user_id = ? AND contact_user_id = u.id
+                    )
+                ELSE 0
+            END as is_in_contacts,
+            -- Flag to identify current user
+            (u.id = ?) as is_current_user
         FROM users u
-        WHERE u.id != ?
+        WHERE 1=1
     ";
     
-    $params = [$current_user_id, $current_user_id, $current_user_id];
-    $types = "iii";
+    $params = [$current_user_id, $current_user_id, $current_user_id, $current_user_id, $current_user_id];
+    $types = "iiiii";
     
     // Add search filter
     if (!empty($search)) {
@@ -78,8 +88,11 @@ try {
         $types .= "ssss";
     }
     
-    // Order: online first, then by name
-    $query .= " ORDER BY u.is_online DESC, u.last_seen DESC, u.fullname ASC";
+    // Order: current user first, then online users, then by name
+    $query .= " ORDER BY (u.id = ?) DESC, u.is_online DESC, u.last_seen DESC, u.fullname ASC";
+    $params[] = $current_user_id;
+    $types .= "i";
+    
     $query .= " LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
@@ -142,7 +155,9 @@ try {
         
         // Determine what to show as subtitle
         $subtitle = '';
-        if (!empty($row['status_message']) && $row['status_message'] !== 'Available') {
+        if ((bool)$row['is_current_user']) {
+            $subtitle = '(You)';
+        } elseif (!empty($row['status_message']) && $row['status_message'] !== 'Available') {
             $subtitle = $row['status_message'];
         } elseif (!empty($row['bio'])) {
             $subtitle = $row['bio'];
@@ -152,9 +167,15 @@ try {
             $subtitle = 'Available';
         }
         
+        // Build display name with (You) suffix for current user
+        $fullname = htmlspecialchars($row['fullname'] ?? $row['username'] ?? 'Unknown');
+        if ((bool)$row['is_current_user']) {
+            $fullname .= ' (You)';
+        }
+        
         $users[] = [
             'id' => (int)$user_id,
-            'fullname' => htmlspecialchars($row['fullname'] ?? $row['username'] ?? 'Unknown'),
+            'fullname' => $fullname,
             'username' => htmlspecialchars($row['username'] ?? ''),
             'profile_photo' => $profile_photo_url,
             'phone' => htmlspecialchars($row['phone'] ?? ''),
@@ -166,6 +187,7 @@ try {
             'subtitle' => htmlspecialchars($subtitle),
             'existing_conversation_id' => $row['existing_conversation_id'] ? (int)$row['existing_conversation_id'] : null,
             'is_in_contacts' => (int)$row['is_in_contacts'] > 0,
+            'is_current_user' => (bool)$row['is_current_user'],
             'initials' => strtoupper(substr($row['fullname'] ?? $row['username'] ?? 'U', 0, 1))
         ];
     }

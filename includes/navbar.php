@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // =========================
     const projectFolder = window.location.pathname
         .split('/')
-        .slice(0, 2)
+        .slice(0, 1)
         .join('/');
 
     const baseUrl = window.location.origin + projectFolder;

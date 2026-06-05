@@ -16,6 +16,8 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Chat with <?php echo htmlspecialchars($contact_name ?? ''); ?> | BisureChat</title>
+    <!-- PWA Meta Tags -->
+    <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/bisurechat/install_pwa_head_tags.php'; ?>
     <link rel="icon" href="../../favicon.png" type="image/x-icon">
 
     <!-- Font Awesome -->
@@ -45,6 +47,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             --reply-border: #D1D7DB;
             --input-bg: #FFFFFF;
             --hover-light: rgba(0, 0, 0, 0.04);
+            --read-more-color: #128C7E;
             
             /* Safe area insets for notched phones */
             --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
@@ -202,6 +205,57 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             background: rgba(255, 255, 255, 0.15);
         }
 
+        /* Pull to refresh indicator */
+        .pull-to-refresh {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: var(--card-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+            transition: top 0.3s ease;
+        }
+
+        .pull-to-refresh.show {
+            top: 70px;
+        }
+
+        .pull-to-refresh i {
+            color: var(--primary-color);
+            font-size: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .refresh-toast {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 10;
+            transition: top 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .refresh-toast.show {
+            top: 70px;
+        }
+
         /* Messages area - FLEX GROW to fill available space */
         .messages-container {
             flex: 1;
@@ -216,6 +270,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             transition: background-color 0.3s ease;
             -webkit-overflow-scrolling: touch;
             min-height: 0;
+            overscroll-behavior-y: contain;
         }
 
         .message {
@@ -249,6 +304,44 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             font-size: 14px;
             line-height: 1.45;
             color: var(--text-dark);
+        }
+
+        /* Read More styles */
+        .message-text-container {
+            position: relative;
+        }
+        .message-text.truncated {
+            display: inline;
+        }
+        .message-text.full {
+            display: none;
+        }
+        .message-text.full.show {
+            display: inline;
+        }
+        .message-text.truncated.hide {
+            display: none;
+        }
+        .read-more-btn, .show-more-btn {
+            display: inline;
+            color: var(--read-more-color);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0 4px;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border-radius: 10px;
+        }
+        .read-more-btn:hover, .show-more-btn:hover {
+            background-color: rgba(18, 140, 126, 0.1);
+            text-decoration: underline;
+        }
+        .read-more-btn:active, .show-more-btn:active {
+            transform: scale(0.95);
         }
 
         .message-time {
@@ -776,24 +869,6 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
         }
 
-        /* Show more button */
-        .show-more-btn {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-
-        .show-more-btn:hover {
-            background-color: rgba(18, 140, 126, 0.1);
-            text-decoration: underline;
-        }
-
         /* Loading spinner */
         .spinner {
             width: 18px;
@@ -970,6 +1045,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             --reply-border: #374248;
             --input-bg: #2A3942;
             --hover-light: rgba(255, 255, 255, 0.05);
+            --read-more-color: #25D366;
             background-color: var(--background-light);
             color: var(--text-dark);
         }
@@ -1059,6 +1135,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             border-color: var(--border-color);
         }
 
+        body.dark-mode .read-more-btn:hover, 
         body.dark-mode .show-more-btn:hover {
             background-color: rgba(37, 211, 102, 0.15);
         }
@@ -1096,6 +1173,10 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
 
         body.dark-mode .reply-preview-bar .reply-preview-label {
             color: var(--secondary-color);
+        }
+
+        body.dark-mode .pull-to-refresh {
+            background: var(--card-bg);
         }
 
         /* RESPONSIVE STYLES */
@@ -1166,6 +1247,10 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             .message-reply-preview .reply-preview-content {
                 font-size: 11px;
                 max-width: 200px;
+            }
+
+            .read-more-btn, .show-more-btn {
+                font-size: 0.75rem;
             }
         }
 
@@ -1267,6 +1352,14 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
 
     <div class="main-container">
         <div class="chat-container">
+            <!-- Pull to refresh indicator -->
+            <div class="pull-to-refresh" id="pullToRefresh">
+                <i class="fas fa-sync-alt"></i>
+            </div>
+            <div class="refresh-toast" id="refreshToast">
+                <i class="fas fa-check"></i> Refreshed
+            </div>
+
             <!-- Chat Header -->
             <div class="chat-header">
                 <div>
@@ -1281,25 +1374,32 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                         
                         if (!empty($contact_profile_photo)) {
                             $clean_path = ltrim($contact_profile_photo, '/');
+                            // Sanitize path - prevent directory traversal
+                            $clean_path = basename($clean_path);
                             $full_path = __DIR__ . '/../' . $clean_path;
                             
                             if ($clean_path !== 'assets/images/user.png' && 
                                 $clean_path !== 'asssets/images/user.png' && 
-                                file_exists($full_path)) {
+                                file_exists($full_path) && 
+                                is_file($full_path)) {
                                 $show_photo = true;
                                 $photo_url = $contact_profile_photo;
                             }
                         }
+                        
+                        // Sanitize the initial for the avatar
+                        $avatar_initial = strtoupper(substr($contact_name ?? 'U', 0, 1));
+                        $avatar_initial = htmlspecialchars($avatar_initial, ENT_QUOTES, 'UTF-8');
                         ?>
                         
                         <?php if ($show_photo): ?>
-                            <img src="<?php echo htmlspecialchars($photo_url); ?>" 
-                                alt="<?php echo htmlspecialchars($contact_name); ?>" 
+                            <img src="<?php echo htmlspecialchars($photo_url, ENT_QUOTES, 'UTF-8'); ?>" 
+                                alt="<?php echo htmlspecialchars($contact_name, ENT_QUOTES, 'UTF-8'); ?>" 
                                 class="avatar-img"
-                                onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23128C7E%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%23fff%22 font-size=%2250%22 font-weight=%22bold%22 x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22%3E<?php echo strtoupper(substr($contact_name ?? 'U', 0, 1)); ?>%3C/text%3E%3C/svg%3E';">
+                                onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23128C7E%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%23fff%22 font-size=%2250%22 font-weight=%22bold%22 x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22%3E<?php echo $avatar_initial; ?>%3C/text%3E%3C/svg%3E';">
                         <?php else: ?>
                             <div style="width:100%; height:100%; background-color:#128C7E; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">
-                                <?php echo strtoupper(substr($contact_name ?? 'U', 0, 1)); ?>
+                                <?php echo $avatar_initial; ?>
                             </div>
                         <?php endif; ?>
                         
@@ -1307,7 +1407,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                     </div>
 
                     <div class="chat-info">
-                        <div class="chat-name"><?php echo htmlspecialchars($contact_name ?? 'Unknown'); ?></div>
+                        <div class="chat-name"><?php echo htmlspecialchars($contact_name ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></div>
                         <div class="chat-status" id="contactStatus">Online</div>
                     </div>
                 </div>
@@ -1320,16 +1420,19 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                 <?php if ($messages_result && $messages_result->num_rows > 0): ?>
                     <?php while ($message = $messages_result->fetch_assoc()): ?>
                         <?php
-                        $is_sender = ($message['sender_id'] == $current_user_id);
+                        $is_sender = ((int)$message['sender_id'] === (int)$current_user_id);
                         $message_class = $is_sender ? 'sent' : 'received';
-                        $message_text = htmlspecialchars_decode($message['message_text'] ?? '');
+                        // Sanitize message text - decode then re-encode properly
+                        $message_text = $message['message_text'] ?? '';
+                        $message_text = htmlspecialchars_decode($message_text, ENT_QUOTES);
                         $message_time = date('h:i A | M d', strtotime($message['created_at']));
                         $attachment_path = $message['attachment_path'] ?? '';
-                        $message_type = $message['message_type'] ?? 'text';
-                        $message_id = $message['id'];
-                        $is_edited = $message['is_edited'] ?? 0;
-                        $is_deleted = $message['is_deleted'] ?? 0;
-                        $reply_to_id = $message['reply_to_id'] ?? null;
+                        $attachment_path = htmlspecialchars($attachment_path, ENT_QUOTES, 'UTF-8');
+                        $message_type = htmlspecialchars($message['message_type'] ?? 'text', ENT_QUOTES, 'UTF-8');
+                        $message_id = (int)$message['id'];
+                        $is_edited = (int)($message['is_edited'] ?? 0);
+                        $is_deleted = (int)($message['is_deleted'] ?? 0);
+                        $reply_to_id = $message['reply_to_id'] ? (int)$message['reply_to_id'] : null;
 
                         // Determine read status
                         $is_read = false;
@@ -1344,6 +1447,10 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                         
                         $deleted_class = $is_deleted ? ' deleted' : '';
                         
+                        // Check if message needs truncation
+                        $wordCount = str_word_count($message_text);
+                        $needsTruncation = $wordCount > 50;
+                        
                         // Fetch replied message details if exists
                         $replied_message_data = null;
                         if (!empty($reply_to_id)) {
@@ -1355,17 +1462,19 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                 WHERE m.id = ?
                             ";
                             $reply_stmt = $conn->prepare($reply_query);
-                            $reply_stmt->bind_param("i", $reply_to_id);
-                            $reply_stmt->execute();
-                            $reply_result = $reply_stmt->get_result();
-                            $replied_message_data = $reply_result->fetch_assoc();
-                            $reply_stmt->close();
+                            if ($reply_stmt) {
+                                $reply_stmt->bind_param("i", $reply_to_id);
+                                $reply_stmt->execute();
+                                $reply_result = $reply_stmt->get_result();
+                                $replied_message_data = $reply_result->fetch_assoc();
+                                $reply_stmt->close();
+                            }
                         }
                         ?>
 
-                        <div class="message <?php echo $message_class . $deleted_class; ?>" 
+                        <div class="message <?php echo htmlspecialchars($message_class . $deleted_class, ENT_QUOTES, 'UTF-8'); ?>" 
                              data-message-id="<?php echo $message_id; ?>" 
-                             data-message-type="<?php echo $message_type; ?>"
+                             data-message-type="<?php echo htmlspecialchars($message_type, ENT_QUOTES, 'UTF-8'); ?>"
                              data-reply-to-id="<?php echo $reply_to_id ?? ''; ?>">
                             
                             <?php if ($replied_message_data): ?>
@@ -1375,7 +1484,9 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                         <i class="fas fa-reply"></i>
                                         <?php 
                                             $reply_sender_name = htmlspecialchars(
-                                                $replied_message_data['fullname'] ?? $replied_message_data['username'] ?? 'Unknown'
+                                                $replied_message_data['fullname'] ?? $replied_message_data['username'] ?? 'Unknown',
+                                                ENT_QUOTES,
+                                                'UTF-8'
                                             );
                                             echo $reply_sender_name;
                                         ?>
@@ -1388,6 +1499,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                         <div class="reply-preview-attachment">
                                             <?php
                                             $reply_ext = strtolower(pathinfo($replied_message_data['attachment_path'], PATHINFO_EXTENSION));
+                                            $reply_ext = htmlspecialchars($reply_ext, ENT_QUOTES, 'UTF-8');
                                             if (in_array($reply_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
                                                 echo '<i class="fas fa-image"></i> Photo';
                                             } elseif (in_array($reply_ext, ['mp4', 'webm', 'ogv'])) {
@@ -1402,13 +1514,12 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                     <?php else: ?>
                                         <div class="reply-preview-content">
                                             <?php 
-                                                $reply_text = htmlspecialchars_decode($replied_message_data['message_text']);
-                                                // Get first 150 characters for preview
+                                                $reply_text = htmlspecialchars_decode($replied_message_data['message_text'] ?? '', ENT_QUOTES);
                                                 $preview = mb_substr($reply_text, 0, 150);
                                                 if (mb_strlen($reply_text) > 150) {
                                                     $preview .= '...';
                                                 }
-                                                echo htmlspecialchars($preview);
+                                                echo htmlspecialchars($preview, ENT_QUOTES, 'UTF-8');
                                             ?>
                                         </div>
                                     <?php endif; ?>
@@ -1419,51 +1530,56 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                 <?php if ($is_deleted): ?>
                                     <em>This message was deleted</em>
                                 <?php else: ?>
-                                    <?php
-                                    $message_words = explode(' ', $message_text);
-                                    $is_long_message = count($message_words) > 50;
-                                    $display_text = $is_long_message ? implode(' ', array_slice($message_words, 0, 50)) : $message_text;
-                                    echo nl2br(htmlspecialchars($display_text));
-                                    ?>
-                                    <?php if ($is_long_message): ?>
-                                        <button class="show-more-btn" onclick="showMoreMessage(this, <?php echo $message_id; ?>)">Read More</button>
-                                        <div class="full-message" style="display:none;"><?php echo nl2br(htmlspecialchars($message_text)); ?></div>
-                                    <?php endif; ?>
+                                    <div class="message-text-container">
+                                        <?php if ($needsTruncation): 
+                                            $words = explode(' ', $message_text);
+                                            $truncatedText = implode(' ', array_slice($words, 0, 50));
+                                        ?>
+                                            <span class="message-text truncated"><?php echo nl2br(htmlspecialchars($truncatedText, ENT_QUOTES, 'UTF-8')); ?>... </span>
+                                            <span class="message-text full" style="display:none;"><?php echo nl2br(htmlspecialchars($message_text, ENT_QUOTES, 'UTF-8')); ?> </span>
+                                            <button class="read-more-btn" onclick="toggleReadMore(this)">Read more</button>
+                                        <?php else: ?>
+                                            <span class="message-text full show"><?php echo nl2br(htmlspecialchars($message_text, ENT_QUOTES, 'UTF-8')); ?></span>
+                                        <?php endif; ?>
+                                    </div>
                                 <?php endif; ?>
                             </div>
                             
                             <?php if (!$is_deleted && !empty($attachment_path)): ?>
                                 <?php
                                 $file_extension = strtolower(pathinfo($attachment_path, PATHINFO_EXTENSION));
+                                $file_extension = htmlspecialchars($file_extension, ENT_QUOTES, 'UTF-8');
                                 $file_name = basename($attachment_path);
+                                $file_name = htmlspecialchars($file_name, ENT_QUOTES, 'UTF-8');
+                                $safe_attachment_path = htmlspecialchars($attachment_path, ENT_QUOTES, 'UTF-8');
                                 ?>
 
                                 <?php if (in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])): ?>
                                     <div class="message-attachment">
-                                        <img src="<?php echo htmlspecialchars($attachment_path); ?>" alt="<?php echo htmlspecialchars($file_name); ?>" class="message-image" onclick="openImage('<?php echo htmlspecialchars($attachment_path); ?>')" loading="lazy">
+                                        <img src="<?php echo $safe_attachment_path; ?>" alt="<?php echo $file_name; ?>" class="message-image" onclick="openImage('<?php echo $safe_attachment_path; ?>')" loading="lazy">
                                     </div>
                                 <?php elseif (in_array($file_extension, ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'])): ?>
                                     <div class="message-attachment">
-                                        <a href="<?php echo htmlspecialchars($attachment_path); ?>" download="<?php echo htmlspecialchars($file_name); ?>" class="attachment-link">
-                                            <i class="fas fa-file"></i> <?php echo htmlspecialchars($file_name); ?>
+                                        <a href="<?php echo $safe_attachment_path; ?>" download="<?php echo $file_name; ?>" class="attachment-link">
+                                            <i class="fas fa-file"></i> <?php echo $file_name; ?>
                                         </a>
                                     </div>
                                 <?php elseif (in_array($file_extension, ['mp3', 'wav', 'ogg'])): ?>
                                     <div class="message-attachment">
                                         <audio controls class="message-audio">
-                                            <source src="<?php echo htmlspecialchars($attachment_path); ?>" type="audio/<?php echo ($file_extension === 'mp3' ? 'mpeg' : $file_extension); ?>">
+                                            <source src="<?php echo $safe_attachment_path; ?>" type="audio/<?php echo ($file_extension === 'mp3' ? 'mpeg' : $file_extension); ?>">
                                         </audio>
                                     </div>
                                 <?php elseif (in_array($file_extension, ['mp4', 'webm', 'ogv', 'avi', 'mkv'])): ?>
                                     <div class="message-attachment">
                                         <video controls class="message-video">
-                                            <source src="<?php echo htmlspecialchars($attachment_path); ?>" type="video/<?php echo ($file_extension === 'mp4' ? 'mp4' : $file_extension); ?>">
+                                            <source src="<?php echo $safe_attachment_path; ?>" type="video/<?php echo ($file_extension === 'mp4' ? 'mp4' : $file_extension); ?>">
                                         </video>
                                     </div>
                                 <?php else: ?>
                                     <div class="message-attachment">
-                                        <a href="<?php echo htmlspecialchars($attachment_path); ?>" download="<?php echo htmlspecialchars($file_name); ?>" class="attachment-link">
-                                            <i class="fas fa-paperclip"></i> <?php echo htmlspecialchars($file_name); ?>
+                                        <a href="<?php echo $safe_attachment_path; ?>" download="<?php echo $file_name; ?>" class="attachment-link">
+                                            <i class="fas fa-paperclip"></i> <?php echo $file_name; ?>
                                         </a>
                                     </div>
                                 <?php endif; ?>
@@ -1473,9 +1589,9 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                 <?php if ($is_edited && !$is_deleted): ?>
                                     <span class="edited-indicator">edited</span>
                                 <?php endif; ?>
-                                <?php echo $message_time; ?>
+                                <?php echo htmlspecialchars($message_time, ENT_QUOTES, 'UTF-8'); ?>
                                 <?php if ($is_sender && !$is_deleted): ?>
-                                    <span class="<?php echo $tick_class; ?>" id="tick-<?php echo $message_id; ?>">
+                                    <span class="<?php echo htmlspecialchars($tick_class, ENT_QUOTES, 'UTF-8'); ?>" id="tick-<?php echo $message_id; ?>">
                                         <i class="fas fa-check tick-icon"></i>
                                         <?php if ($is_read): ?>
                                             <i class="fas fa-check tick-icon"></i>
@@ -1487,14 +1603,14 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                             <?php if (!$is_deleted): ?>
                             <div class="message-actions">
                                 <?php if ($is_sender && $message_type === 'text'): ?>
-                                    <button class="message-action" onclick="openEditModal(<?php echo $message_id; ?>, '<?php echo addslashes($message_text); ?>')">
+                                    <button class="message-action" onclick="openEditModal(<?php echo $message_id; ?>, '<?php echo htmlspecialchars(addslashes($message_text), ENT_QUOTES, 'UTF-8'); ?>')">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                 <?php endif; ?>
                                 <button class="message-action" onclick="confirmDeleteMessage(<?php echo $message_id; ?>)">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                <button class="message-action" onclick="setReplyMessage(<?php echo $message_id; ?>, '<?php echo addslashes(mb_substr($message_text, 0, 150)); ?>', '<?php echo addslashes($is_sender ? 'You' : ($contact_name ?? 'User')); ?>', '<?php echo $message_type; ?>', '<?php echo addslashes($attachment_path); ?>')">
+                                <button class="message-action" onclick="setReplyMessage(<?php echo $message_id; ?>, '<?php echo htmlspecialchars(addslashes(mb_substr($message_text, 0, 150)), ENT_QUOTES, 'UTF-8'); ?>', '<?php echo htmlspecialchars(addslashes($is_sender ? 'You' : ($contact_name ?? 'User')), ENT_QUOTES, 'UTF-8'); ?>', '<?php echo htmlspecialchars($message_type, ENT_QUOTES, 'UTF-8'); ?>', '<?php echo htmlspecialchars(addslashes($attachment_path), ENT_QUOTES, 'UTF-8'); ?>')">
                                     <i class="fas fa-reply"></i>
                                 </button>
                             </div>
@@ -1505,7 +1621,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                     <div style="text-align: center; margin-top: 50px; color: var(--text-secondary);">
                         <i class="fas fa-comments" style="font-size: 50px; margin-bottom: 15px;"></i>
                         <p>No messages yet</p>
-                        <p>Start the conversation with <?php echo htmlspecialchars($contact_name ?? 'this user'); ?></p>
+                        <p>Start the conversation with <?php echo htmlspecialchars($contact_name ?? 'this user', ENT_QUOTES, 'UTF-8'); ?></p>
                     </div>
                 <?php endif; ?>
             </div>
@@ -1592,6 +1708,10 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
         let currentReplyType = '';
         let currentReplyAttachment = '';
         let currentConversationId = <?php echo $conversation_id ?? 'null'; ?>;
+        let isLoadingMessages = false;
+        let pullStartY = 0;
+        let pullDistance = 0;
+        const PULL_THRESHOLD = 80;
 
         // DOM Ready Handler
         document.addEventListener('DOMContentLoaded', function() {
@@ -1602,6 +1722,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             setupModalHandlers();
             setupSwipeToReply();
             setupReplyPreviewClick();
+            setupPullToRefresh();
             scrollToBottom();
             
             // Prevent body scroll when keyboard opens on iOS
@@ -1613,6 +1734,123 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                 }
             }, true);
         });
+
+        // Toggle Read More for long messages
+        window.toggleReadMore = function(button) {
+            const container = button.parentElement;
+            const truncated = container.querySelector('.message-text.truncated');
+            const full = container.querySelector('.message-text.full');
+            
+            if (full.style.display === 'none' || !full.style.display) {
+                // Show full text
+                full.style.display = 'inline';
+                truncated.style.display = 'none';
+                button.textContent = 'Show less';
+            } else {
+                // Hide full text
+                full.style.display = 'none';
+                truncated.style.display = 'inline';
+                button.textContent = 'Read more';
+            }
+            
+            // Scroll to keep the message visible
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
+        };
+
+        // Pull to refresh functionality
+        function setupPullToRefresh() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const pullToRefresh = document.getElementById('pullToRefresh');
+            const refreshToast = document.getElementById('refreshToast');
+            
+            messagesContainer.addEventListener('touchstart', function(e) {
+                if (messagesContainer.scrollTop <= 0) {
+                    pullStartY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+            
+            messagesContainer.addEventListener('touchmove', function(e) {
+                if (messagesContainer.scrollTop <= 0 && !isLoadingMessages) {
+                    const currentY = e.touches[0].clientY;
+                    pullDistance = currentY - pullStartY;
+                    
+                    if (pullDistance > 0 && pullDistance < PULL_THRESHOLD * 1.5) {
+                        e.preventDefault();
+                        const opacity = Math.min(pullDistance / PULL_THRESHOLD, 1);
+                        pullToRefresh.style.opacity = opacity;
+                        pullToRefresh.style.transform = `translateX(-50%) translateY(${Math.min(pullDistance - 50, 20)}px)`;
+                        
+                        if (pullDistance >= PULL_THRESHOLD) {
+                            pullToRefresh.classList.add('show');
+                        } else {
+                            pullToRefresh.classList.remove('show');
+                        }
+                    }
+                }
+            }, { passive: false });
+            
+            messagesContainer.addEventListener('touchend', function() {
+                if (pullDistance >= PULL_THRESHOLD && !isLoadingMessages) {
+                    refreshMessages();
+                }
+                
+                // Reset pull indicator
+                pullToRefresh.style.opacity = '0';
+                pullToRefresh.style.transform = 'translateX(-50%) translateY(-50px)';
+                pullToRefresh.classList.remove('show');
+                pullDistance = 0;
+            });
+            
+            // Also add a refresh button in header for desktop
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                    e.preventDefault();
+                    refreshMessages();
+                }
+            });
+        }
+        
+        function refreshMessages() {
+            if (isLoadingMessages) return;
+            isLoadingMessages = true;
+            
+            const refreshToast = document.getElementById('refreshToast');
+            const pullToRefresh = document.getElementById('pullToRefresh');
+            
+            pullToRefresh.classList.add('show');
+            
+            // Reload the page to refresh messages
+            setTimeout(() => {
+                location.reload();
+            }, 300);
+            
+            // Alternative: AJAX refresh without full page reload
+            // fetch(window.location.href)
+            //     .then(response => response.text())
+            //     .then(html => {
+            //         const parser = new DOMParser();
+            //         const doc = parser.parseFromString(html, 'text/html');
+            //         const newMessages = doc.getElementById('messagesContainer').innerHTML;
+            //         document.getElementById('messagesContainer').innerHTML = newMessages;
+            //         scrollToBottom();
+            //     })
+            //     .catch(error => {
+            //         console.error('Refresh error:', error);
+            //         location.reload();
+            //     })
+            //     .finally(() => {
+            //         isLoadingMessages = false;
+            //         pullToRefresh.classList.remove('show');
+            //         
+            //         // Show success toast
+            //         refreshToast.classList.add('show');
+            //         setTimeout(() => {
+            //             refreshToast.classList.remove('show');
+            //         }, 1500);
+            //     });
+        }
 
         // Auto-resize textarea
         function setupAutoResizeTextarea() {
@@ -1875,7 +2113,8 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                                 currentConversationId = data.conversation_id;
                             }
 
-                            location.reload();
+                            // Refresh messages instead of full page reload
+                            refreshMessages();
                         } else {
                             throw new Error(data.error || 'Failed to send message');
                         }
@@ -1938,7 +2177,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            location.reload();
+                            refreshMessages();
                         } else {
                             alert("Error: " + (data.message || 'Failed to update message'));
                         }
@@ -1971,7 +2210,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            location.reload();
+                            refreshMessages();
                         } else {
                             alert("Error: " + (data.message || 'Failed to delete message'));
                         }
@@ -2006,13 +2245,10 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                 const replyPreviewLabel = document.getElementById('replyPreviewLabel');
                 const replyPreviewMessage = document.getElementById('replyPreviewMessage');
 
-                // Set the label "Replying to [Name]"
                 replyPreviewLabel.textContent = `Replying to ${senderName}`;
 
-                // Set the preview message content
                 let previewText = '';
                 if (messageType && messageType !== 'text' && attachmentPath) {
-                    // It's an attachment
                     const ext = attachmentPath.split('.').pop().toLowerCase();
                     if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
                         previewText = '📷 Photo';
@@ -2024,7 +2260,6 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                         previewText = '📎 File';
                     }
                 } else {
-                    // Text message - truncate with ellipsis if too long
                     if (messageContent.length > 80) {
                         previewText = messageContent.substring(0, 80) + '...';
                     } else {
@@ -2035,10 +2270,7 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
                 replyPreviewMessage.textContent = previewText;
                 replyPreviewBar.classList.add('show');
                 
-                // Focus on input field
                 document.getElementById('messageInput').focus();
-                
-                // Scroll to bottom
                 scrollToBottom();
             };
 
@@ -2091,27 +2323,6 @@ $current_user_id = $_SESSION['user_id'] ?? 0;
             if (messagesContainer) {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
-        }
-
-        window.showMoreMessage = function(button, messageId) {
-            const messageContainer = button.parentElement;
-            const fullMessage = messageContainer.querySelector('.full-message');
-            const words = fullMessage.textContent.split(/\s+/);
-            let currentCount = parseInt(messageContainer.getAttribute('data-words-shown')) || 50;
-            const newCount = currentCount + 50;
-            if (newCount >= words.length) {
-                messageContainer.innerHTML = fullMessage.innerHTML;
-            } else {
-                const partialText = words.slice(0, newCount).join(' ');
-                messageContainer.innerHTML = nl2br(partialText) +
-                    `<button class="show-more-btn" onclick="showMoreMessage(this, ${messageId})">Read More</button>` +
-                    `<div class="full-message" style="display:none;">${fullMessage.textContent}</div>`;
-                messageContainer.setAttribute('data-words-shown', newCount);
-            }
-        };
-
-        function nl2br(str) {
-            return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2');
         }
 
         window.openImage = function(imageUrl) {

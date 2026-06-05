@@ -29,12 +29,10 @@ try {
             throw new Exception("Receiver ID is missing.");
         }
 
-        // Prevent sending to self
-        if ($receiver_id == $user_id) {
-            throw new Exception("Cannot send message to yourself.");
-        }
+        // Check if this is a self-message
+        $is_self_message = ($receiver_id == $user_id);
 
-        // Validate that receiver exists
+        // Validate that receiver exists (for both self and other users)
         $user_check_query = "SELECT id FROM users WHERE id = ?";
         $user_check_stmt = mysqli_prepare($conn, $user_check_query);
         mysqli_stmt_bind_param($user_check_stmt, 'i', $receiver_id);
@@ -147,53 +145,107 @@ try {
         mysqli_begin_transaction($conn);
 
         try {
-            // Check if a private conversation already exists between these two users
-            $conversation_query = "
-                SELECT cp1.conversation_id 
-                FROM conversation_participants cp1
-                JOIN conversation_participants cp2 ON cp1.conversation_id = cp2.conversation_id
-                JOIN conversations c ON cp1.conversation_id = c.id
-                WHERE cp1.user_id = ? 
-                AND cp2.user_id = ? 
-                AND c.conversation_type = 'private'
-                LIMIT 1
-            ";
-            
-            $conv_stmt = mysqli_prepare($conn, $conversation_query);
-            mysqli_stmt_bind_param($conv_stmt, 'ii', $user_id, $receiver_id);
-            mysqli_stmt_execute($conv_stmt);
-            $conv_result = mysqli_stmt_get_result($conv_stmt);
-            
-            if (mysqli_num_rows($conv_result) > 0) {
-                // Conversation exists, get the ID
-                $conversation = mysqli_fetch_assoc($conv_result);
-                $conversation_id = $conversation['conversation_id'];
+            if ($is_self_message) {
+                // SELF-MESSAGE: Find or create self-conversation
+                $self_conv_query = "
+                    SELECT c.id 
+                    FROM conversations c
+                    INNER JOIN conversation_participants cp ON c.id = cp.conversation_id
+                    WHERE c.conversation_type = 'self' 
+                    AND cp.user_id = ?
+                    LIMIT 1
+                ";
+                
+                $self_conv_stmt = mysqli_prepare($conn, $self_conv_query);
+                mysqli_stmt_bind_param($self_conv_stmt, 'i', $user_id);
+                mysqli_stmt_execute($self_conv_stmt);
+                $self_conv_result = mysqli_stmt_get_result($self_conv_stmt);
+                
+                if (mysqli_num_rows($self_conv_result) > 0) {
+                    // Self-conversation exists
+                    $self_conv = mysqli_fetch_assoc($self_conv_result);
+                    $conversation_id = $self_conv['id'];
+                } else {
+                    // Create new self-conversation
+                    $create_self_conv_query = "INSERT INTO conversations (conversation_type, created_by) VALUES ('self', ?)";
+                    $create_self_conv_stmt = mysqli_prepare($conn, $create_self_conv_query);
+                    mysqli_stmt_bind_param($create_self_conv_stmt, 'i', $user_id);
+                    
+                    if (!mysqli_stmt_execute($create_self_conv_stmt)) {
+                        throw new Exception("Failed to create self-conversation.");
+                    }
+                    
+                    $conversation_id = mysqli_insert_id($conn);
+                    mysqli_stmt_close($create_self_conv_stmt);
+                    
+                    // Add user as participant (only once since it's a self-conversation)
+                    $add_self_participant_query = "INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)";
+                    $add_self_participant_stmt = mysqli_prepare($conn, $add_self_participant_query);
+                    mysqli_stmt_bind_param($add_self_participant_stmt, 'ii', $conversation_id, $user_id);
+                    
+                    if (!mysqli_stmt_execute($add_self_participant_stmt)) {
+                        throw new Exception("Failed to add participant to self-conversation.");
+                    }
+                    mysqli_stmt_close($add_self_participant_stmt);
+                }
+                mysqli_stmt_close($self_conv_stmt);
+                
             } else {
-                // Create new conversation
-                $create_conv_query = "INSERT INTO conversations (conversation_type, created_by) VALUES ('private', ?)";
-                $create_conv_stmt = mysqli_prepare($conn, $create_conv_query);
-                mysqli_stmt_bind_param($create_conv_stmt, 'i', $user_id);
+                // REGULAR MESSAGE: Check if a private conversation exists between these two users
+                $conversation_query = "
+                    SELECT cp1.conversation_id 
+                    FROM conversation_participants cp1
+                    JOIN conversation_participants cp2 ON cp1.conversation_id = cp2.conversation_id
+                    JOIN conversations c ON cp1.conversation_id = c.id
+                    WHERE cp1.user_id = ? 
+                    AND cp2.user_id = ? 
+                    AND c.conversation_type = 'private'
+                    LIMIT 1
+                ";
                 
-                if (!mysqli_stmt_execute($create_conv_stmt)) {
-                    throw new Exception("Failed to create conversation.");
+                $conv_stmt = mysqli_prepare($conn, $conversation_query);
+                mysqli_stmt_bind_param($conv_stmt, 'ii', $user_id, $receiver_id);
+                mysqli_stmt_execute($conv_stmt);
+                $conv_result = mysqli_stmt_get_result($conv_stmt);
+                
+                if (mysqli_num_rows($conv_result) > 0) {
+                    // Conversation exists, get the ID
+                    $conversation = mysqli_fetch_assoc($conv_result);
+                    $conversation_id = $conversation['conversation_id'];
+                } else {
+                    // Create new conversation
+                    $create_conv_query = "INSERT INTO conversations (conversation_type, created_by) VALUES ('private', ?)";
+                    $create_conv_stmt = mysqli_prepare($conn, $create_conv_query);
+                    mysqli_stmt_bind_param($create_conv_stmt, 'i', $user_id);
+                    
+                    if (!mysqli_stmt_execute($create_conv_stmt)) {
+                        throw new Exception("Failed to create conversation.");
+                    }
+                    
+                    $conversation_id = mysqli_insert_id($conn);
+                    mysqli_stmt_close($create_conv_stmt);
+                    
+                    // Add both users as participants
+                    $add_participant_query = "INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?), (?, ?)";
+                    $add_participant_stmt = mysqli_prepare($conn, $add_participant_query);
+                    mysqli_stmt_bind_param($add_participant_stmt, 'iiii', $conversation_id, $user_id, $conversation_id, $receiver_id);
+                    
+                    if (!mysqli_stmt_execute($add_participant_stmt)) {
+                        throw new Exception("Failed to add participants.");
+                    }
+                    mysqli_stmt_close($add_participant_stmt);
+                    
+                    // Auto-add to contacts table
+                    $add_contact_query = "INSERT IGNORE INTO contacts (user_id, contact_user_id) VALUES (?, ?), (?, ?)";
+                    $add_contact_stmt = mysqli_prepare($conn, $add_contact_query);
+                    mysqli_stmt_bind_param($add_contact_stmt, 'iiii', $user_id, $receiver_id, $receiver_id, $user_id);
+                    mysqli_stmt_execute($add_contact_stmt);
+                    mysqli_stmt_close($add_contact_stmt);
                 }
-                
-                $conversation_id = mysqli_insert_id($conn);
-                mysqli_stmt_close($create_conv_stmt);
-                
-                // Add both users as participants
-                $add_participant_query = "INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?), (?, ?)";
-                $add_participant_stmt = mysqli_prepare($conn, $add_participant_query);
-                mysqli_stmt_bind_param($add_participant_stmt, 'iiii', $conversation_id, $user_id, $conversation_id, $receiver_id);
-                
-                if (!mysqli_stmt_execute($add_participant_stmt)) {
-                    throw new Exception("Failed to add participants.");
-                }
-                mysqli_stmt_close($add_participant_stmt);
+                mysqli_stmt_close($conv_stmt);
             }
-            mysqli_stmt_close($conv_stmt);
 
-            // Insert the message WITH reply_to_id
+            // Insert the message (works for both self and regular messages)
             $message_query = "INSERT INTO messages (conversation_id, sender_id, message_type, message_text, attachment_path, reply_to_id) 
                              VALUES (?, ?, ?, ?, ?, ?)";
             
@@ -206,6 +258,15 @@ try {
             
             $message_id = mysqli_insert_id($conn);
             mysqli_stmt_close($message_stmt);
+
+            // For self-messages, mark as read immediately
+            if ($is_self_message) {
+                $mark_read_query = "INSERT IGNORE INTO message_reads (message_id, user_id, read_at) VALUES (?, ?, NOW())";
+                $mark_read_stmt = mysqli_prepare($conn, $mark_read_query);
+                mysqli_stmt_bind_param($mark_read_stmt, 'ii', $message_id, $user_id);
+                mysqli_stmt_execute($mark_read_stmt);
+                mysqli_stmt_close($mark_read_stmt);
+            }
 
             // Fetch the newly inserted message with user details and reply info
             $select_query = "
@@ -269,7 +330,8 @@ try {
                 $response = [
                     'status' => 'success',
                     'message' => $new_message,
-                    'conversation_id' => $conversation_id
+                    'conversation_id' => $conversation_id,
+                    'is_self_message' => $is_self_message
                 ];
             } else {
                 throw new Exception("Failed to retrieve the new message.");

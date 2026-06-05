@@ -26,36 +26,14 @@ $current_user_id = $_SESSION['user_id'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Contacts | BisureChat</title>
-    <link rel="icon" href="../../favicon.png" type="image/x-icon">
-
+    
+ 	<!-- PWA Meta Tags -->
+    <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/bisurechat/install_pwa_head_tags.php'; ?>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="google" content="notranslate">
-    <meta name="format-detection" content="telephone=no">
-
-    <!-- =============================================
-         PWA META TAGS - UPDATED FOR SUBFOLDER
-         ============================================= -->
-    <link rel="manifest" href="/bisureletschat/manifest.json" crossorigin="use-credentials">
-    <meta name="theme-color" content="#0d6efd">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="BISURE Chat">
-    <link rel="apple-touch-icon" href="/bisureletschat/assets/icons/icon-192x192.png">
-    <meta name="msapplication-TileImage" content="/bisureletschat/assets/icons/icon-144x144.png">
-    <meta name="msapplication-TileColor" content="#0d6efd">
-    
-    <title>BISURE Chat</title>
-
-    <!-- rest of your head content -->
-    
     <style>
         :root {
             --primary-color: #128C7E;
